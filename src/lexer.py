@@ -7,8 +7,8 @@ from src.tokens import Token, TokenType, lookup_ident
 
 
 class Lexer:
-    def __init__(self, source):
-        self.source = source
+    def __init__(self, source_code):
+        self.source = source_code
         self.current_pos = 0
         self.current_char = self.source[self.current_pos]
         self.last_token_value = None
@@ -220,7 +220,7 @@ if __name__ == '__main__':
     && Prueba de IF
     
     if x >= y
-      ? "x es mayor"
+      messagebox("x es mayor")
     else
       ? "x es menor"
     endif
@@ -235,7 +235,7 @@ if __name__ == '__main__':
        endif
     enddo    
     """
-    lexer = Lexer(source=source)
+    lexer = Lexer(source_code=source)
     tok = lexer.next_token()
 
     while tok.value is not None:
