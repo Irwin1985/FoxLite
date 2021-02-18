@@ -103,6 +103,8 @@ keywords = {
     ".t.": TokenType.TRUE,
     ".f.": TokenType.FALSE,
     ".null.": TokenType.NULL,
+    "and": TokenType.AND,
+    "or": TokenType.OR,
 }
 
 

@@ -3,7 +3,7 @@ from src.book.fox_lite_ast import (
     Program,
     Block,
     BinaryOp,
-    UinaryOp,
+    UnaryOp,
     FunctionDecl,
     FunctionCall,
     DoWhile,
@@ -301,7 +301,7 @@ class Parser:
         if self.cur_token.type in (TokenType.NOT, TokenType.MINUS):
             operator = self.cur_token.value
             self.eat(self.cur_token.type)  # '!' ó '-'
-            return UinaryOp(operator=operator, right=self.unary())
+            return UnaryOp(operator=operator, right=self.unary())
         else:
             return self.call()
     """

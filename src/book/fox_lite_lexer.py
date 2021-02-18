@@ -140,15 +140,15 @@ class Lexer:
 
             if self.current_char == '-':
                 self.advance()
-                return self.new_token(TokenType.PLUS, '-')
+                return self.new_token(TokenType.MINUS, '-')
 
             if self.current_char == '*':
                 self.advance()
-                return self.new_token(TokenType.PLUS, '*')
+                return self.new_token(TokenType.MUL, '*')
 
             if self.current_char == '/':
                 self.advance()
-                return self.new_token(TokenType.PLUS, '/')
+                return self.new_token(TokenType.DIV, '/')
 
             if self.current_char == '(':
                 self.advance()

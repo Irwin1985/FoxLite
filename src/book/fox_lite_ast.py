@@ -112,7 +112,7 @@ class BinaryOp(AST):
         pass
 
 
-class UinaryOp(AST):
+class UnaryOp(AST):
     def __init__(self, operator, right):
         self.operator = operator
         self.right = right
