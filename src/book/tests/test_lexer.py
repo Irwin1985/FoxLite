@@ -1,5 +1,5 @@
-from src.fox_lite_lexer import Lexer
-from src.fox_lite_token import Token, TokenType
+from src.book.fox_lite_lexer import Lexer
+from src.book.fox_lite_token import Token, TokenType
 
 import unittest
 

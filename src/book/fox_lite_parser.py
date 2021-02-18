@@ -1,5 +1,5 @@
-from src.fox_lite_token import TokenType
-from src.fox_lite_ast import (
+from src.book.fox_lite_token import TokenType
+from src.book.fox_lite_ast import (
     Program,
     Block,
     BinaryOp,

@@ -1,7 +1,7 @@
 import unittest
-from src.fox_lite_parser import Parser
-from src.fox_lite_lexer import Lexer
-from src.fox_lite_ast import (
+from src.book.fox_lite_parser import Parser
+from src.book.fox_lite_lexer import Lexer
+from src.book.fox_lite_ast import (
     Boolean,
     Integer,
     Identifier,

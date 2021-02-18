@@ -3,7 +3,7 @@
   llamadas tokens.
 """
 
-from src.fox_lite_token import Token, TokenType, lookup_ident
+from src.book.fox_lite_token import Token, TokenType, lookup_ident
 
 
 class Lexer:
