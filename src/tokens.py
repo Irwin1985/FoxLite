@@ -75,9 +75,9 @@ class TokenType(Enum):
 
 
 class Token:
-    def __init__(self, type, value):
-        self.type = type
-        self.value = value
+    def __init__(self, token_type, token_value):
+        self.type = token_type
+        self.value = token_value
 
     def __str__(self):
         return f"type: {self.type}, value: '{self.value}'"

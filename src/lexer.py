@@ -19,7 +19,7 @@ class Lexer:
 
     # Crea un token y actualiza el último token generado.
     def new_token(self, token_type, token_value):
-        token = Token(type=token_value, value=token_value)
+        token = Token(token_type=token_type, token_value=token_value)
         self.last_token_value = token_value
         return token
 
