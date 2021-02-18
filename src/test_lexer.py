@@ -1,5 +1,5 @@
-from src.lexer import Lexer
-from src.tokens import Token, TokenType
+from src.fox_lite_lexer import Lexer
+from src.fox_lite_token import Token, TokenType
 
 import unittest
 
@@ -27,6 +27,9 @@ class TestLexer(unittest.TestCase):
               return
            endif
         enddo
+        a = .t.
+        b = .f.
+        c = .null.
         """
         expected_tokens = [
             Token(TokenType.IDENT, "x"),
@@ -81,6 +84,18 @@ class TestLexer(unittest.TestCase):
             Token(TokenType.ENDIF, "endif"),
             Token(TokenType.LBREAK, "LBREAK"),
             Token(TokenType.ENDDO, "enddo"),
+            Token(TokenType.LBREAK, "LBREAK"),
+            Token(TokenType.IDENT, "a"),
+            Token(TokenType.ASSIGN, "="),
+            Token(TokenType.TRUE, ".t."),
+            Token(TokenType.LBREAK, "LBREAK"),
+            Token(TokenType.IDENT, "b"),
+            Token(TokenType.ASSIGN, "="),
+            Token(TokenType.FALSE, ".f."),
+            Token(TokenType.LBREAK, "LBREAK"),
+            Token(TokenType.IDENT, "c"),
+            Token(TokenType.ASSIGN, "="),
+            Token(TokenType.NULL, ".null."),
             Token(TokenType.LBREAK, "LBREAK"),
         ]
         lexer = Lexer(source_code=source_code)

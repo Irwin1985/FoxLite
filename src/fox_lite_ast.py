@@ -88,7 +88,7 @@ class DoWhile(AST):
 
 class FunctionCall(AST):
     def __init__(self):
-        self.function = None
+        self.name = None
         self.arguments = []
 
     def string(self):

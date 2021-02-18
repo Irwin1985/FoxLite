@@ -1,5 +1,5 @@
-from src.tokens import TokenType
-from src.ast import (
+from src.fox_lite_token import TokenType
+from src.fox_lite_ast import (
     Program,
     Block,
     BinaryOp,
@@ -81,7 +81,9 @@ class Parser:
     """
     def block(self, ending_block_token_type):
         block = Block()
-        self.eat(TokenType.LBREAK)
+
+        if self.cur_token.type == TokenType.LBREAK:
+            self.eat(TokenType.LBREAK)
 
         while self.cur_token.type != ending_block_token_type:
             statement = self.statement()
@@ -89,6 +91,9 @@ class Parser:
                 block.statements.append(statement)
 
         self.eat(ending_block_token_type)
+
+        if self.cur_token.type == TokenType.LBREAK:
+            self.eat(TokenType.LBREAK)
 
         return block
 
@@ -115,18 +120,21 @@ class Parser:
         public_decl = 'public' identifier
     """
     def public_decl(self):
+        self.eat(TokenType.PUBLIC)
         var_token = self.identifier()
         return VariableDecl(token=var_token, scope='public')
     """
         local_decl = 'local' identifier
     """
     def local_decl(self):
+        self.eat(TokenType.LOCAL)
         var_token = self.identifier()
         return VariableDecl(token=var_token, scope='local')
     """
         private = 'private' identifier
     """
     def private_decl(self):
+        self.eat(TokenType.PRIVATE)
         var_token = self.identifier()
         return VariableDecl(token=var_token, scope='private')
     """
@@ -135,12 +143,14 @@ class Parser:
     def function_decl(self):
         self.eat(TokenType.FUNCTION)
         func = FunctionDecl(name=self.identifier())
-        self.eat(TokenType.LPAREN)
 
-        if self.cur_token.type != TokenType.RPAREN:
-            func.params = self.parse_parameters()
+        if self.cur_token.type == TokenType.LPAREN:
+            self.eat(TokenType.LPAREN)
 
-        self.eat(TokenType.RPAREN)
+            if self.cur_token.type != TokenType.RPAREN:
+                func.params = self.parse_parameters()
+
+            self.eat(TokenType.RPAREN)
 
         func.body = self.block(ending_block_token_type=TokenType.ENDFUNC)
 
@@ -165,9 +175,6 @@ class Parser:
         if_stmt.condition = self.expression()
         if_stmt.consequence = Block()
 
-        # Analizamos el bloque del if
-        self.eat(TokenType.LBREAK)
-
         while self.cur_token.type not in (TokenType.ELSE, TokenType.ENDIF):
             statement = self.statement()
             if statement is not None:
@@ -185,6 +192,7 @@ class Parser:
     """
     def assignment(self):
         name = self.identifier()
+        self.eat(TokenType.ASSIGN)
         value = self.expression()
         return Assignment(name=name, value=value)
 
@@ -195,7 +203,7 @@ class Parser:
         return_stmt = ReturnStmt()
         self.eat(TokenType.RETURN)
 
-        if self.cur_token != TokenType.LBREAK:
+        if self.cur_token.type != TokenType.LBREAK:
             return_stmt.value = self.expression()
         else:
             return_stmt.value = Boolean(value=True)
@@ -304,7 +312,7 @@ class Parser:
         if self.cur_token.type == TokenType.LPAREN:
             function_name = primary
             primary = FunctionCall()
-            primary.function = function_name
+            primary.name = function_name
 
             self.eat(TokenType.LPAREN)
 
@@ -321,7 +329,7 @@ class Parser:
         tok = self.cur_token
 
         if tok.type in (TokenType.TRUE, TokenType.FALSE):
-            self.eat(tok)  # .T. ó .F.
+            self.eat(tok.type)  # .T. ó .F.
             return Boolean(value=(tok.type == TokenType.TRUE))
 
         elif tok.type == TokenType.NULL:
@@ -358,11 +366,19 @@ class Parser:
         identifiers = [self.identifier()]
 
         while self.cur_token.type == TokenType.COMMA:
+            self.eat(TokenType.COMMA)
             identifiers.append(self.identifier())
 
         return identifiers
 
     def identifier(self):
-        name = self.cur_token
+        name = self.cur_token.value
         self.eat(TokenType.IDENT)
         return Identifier(value=name)
+
+    def parse(self):
+        program = self.program()
+        if self.cur_token.type != TokenType.EOF:
+            self.errors.append(f'Faltaron tokens por analizar')
+
+        return program

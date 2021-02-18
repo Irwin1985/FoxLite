@@ -3,7 +3,7 @@
   llamadas tokens.
 """
 
-from src.tokens import Token, TokenType, lookup_ident
+from src.fox_lite_token import Token, TokenType, lookup_ident
 
 
 class Lexer:
@@ -72,11 +72,18 @@ class Lexer:
 
     # Obtiene una palabra reservada de entre 2 puntos ej: .t., .f., .null.
     def dotted_indentifier(self):
+        result = '.'
         self.advance()  # Avanza el primer punto '.'
-        token = self.identifier()
+
+        while self.current_char is not None and self.current_char != '.':
+            result += self.current_char
+            self.advance()
+
+        result += '.'
         self.advance()  # Avanza el segundo punto '.'
 
-        return token
+        token_type = lookup_ident(result)
+        return self.new_token(token_type, result)
 
     # Obtiene una secuencia de caracteres (string)
     def string(self):
@@ -210,34 +217,3 @@ def is_space(ch):
 def is_letter(ch):
     return ch.isalpha() or ch.isdigit() or ch == '_'
 
-
-if __name__ == '__main__':
-    source = """
-    && Ejemplo FoxLite
-    x = 10 && Declaración de variable 'x'
-    y = 20 && Declaración de variable 'y'
-    
-    && Prueba de IF
-    
-    if x >= y
-      messagebox("x es mayor")
-    else
-      ? "x es menor"
-    endif
-    
-    
-    do while x < 99
-       x = x + 1
-       ? "Contando por", x
-       
-       if x == 55
-          return
-       endif
-    enddo    
-    """
-    lexer = Lexer(source_code=source)
-    tok = lexer.next_token()
-
-    while tok.value is not None:
-        print(tok)
-        tok = lexer.next_token()
