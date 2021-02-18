@@ -354,6 +354,18 @@ class TestParser(unittest.TestCase):
 
         self.assertEqual("foobar", ident.value, f'ident.value not "foobar" got={ident.value}')
 
+    def test_string(self):
+        lexer = Lexer('"hello world"')
+        parser = Parser(lexer)
+
+        program = parser.program()
+        self.assert_check_parser_errors(parser)
+
+        self.assertEqual(1, len(program.statements),
+                         f'program has not enough statements. got={len(program.statements)}')
+        string = program.statements[0]
+        self.assertEqual("hello world", string.value, f'string.value is not hello world. got={string.value}')
+
     def assert_check_parser_errors(self, parser):
         if len(parser.errors) == 0:
             return
