@@ -128,8 +128,8 @@ class VariableDecl(AST):
 
 
 class Assignment(AST):
-    def __init__(self, name=None, value=None):
-        self.name = name
+    def __init__(self, token, value=None):
+        self.token = token
         self.value = value
 
 

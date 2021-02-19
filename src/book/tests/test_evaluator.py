@@ -8,6 +8,13 @@ import src.book.fox_lite_object as obj
 
 
 class TestEvaluator(unittest.TestCase):
+    def test_eval_assignment(self):
+        source = """
+        local foo
+        foo = 10
+        public foo
+        """
+        evaluated = self.assert_test_eval(source)
 
     def test_eval_boolean_expression(self):
         tests = [

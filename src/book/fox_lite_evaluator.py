@@ -12,26 +12,26 @@ NULL = obj.Null()
 
 
 class Evaluator:
-
     def eval(self, node, env):
+        # Evaluar el programa principal
         if type(node) is ast.Program:
             return self.eval_program(node, env)
-
-        elif type(node) is ast.Identifier:
-            return self.eval_identifier(node, env)
-
+        # Evaluar bloques de sentencias
+        elif type(node) is ast.Block:
+            self.eval_block(node, env)
+        # Evaluar enteros
         elif type(node) is ast.Integer:
             return obj.Integer(value=node.value)
-
-        elif type(node) is ast.Boolean:
-            return TRUE if node.value else FALSE
-
-        elif type(node) is ast.Null:
-            return NULL
-
+        # Evaluar String
         elif type(node) is ast.String:
             return obj.String(value=node.value)
-
+        # Evaluar booleanos
+        elif type(node) is ast.Boolean:
+            return TRUE if node.value else FALSE
+        # Evaluar Null
+        elif type(node) is ast.Null:
+            return NULL
+        # Evaluar expresiones unarias
         elif type(node) is ast.UnaryOp:
             operator = node.operator
             right = self.eval(node.right, env)
@@ -40,7 +40,7 @@ class Evaluator:
                 return right
 
             return self.eval_unary_expression(operator, right)
-
+        # Evaluar expresiones binarias
         elif type(node) is ast.BinaryOp:
             operator = node.operator
 
@@ -53,9 +53,21 @@ class Evaluator:
                 return right
 
             return self.eval_binary_expression(left, operator, right)
+        # Evaluar declaraciónes de Variables
+        elif type(node) is ast.VariableDecl:
+            #  Las variables por defecto se declaran en .F.
+            return env.set(node.token.value, FALSE, node.scope)
+        # Evaluar asignaciones de Variables
+        elif type(node) is ast.Assignment:
+            # Resolvemos su valor antes de guardarlo en la Tabla de Símbolos.
+            val = self.eval(node.value, env)
+            if self.is_error(val):
+                return val
 
-        elif type(node) is ast.Block:
-            self.eval_block(node, env)
+            return env.set(node.token.value, val)
+        # Evaluar identificadores
+        elif type(node) is ast.Identifier:
+            return self.eval_identifier(node, env)
 
     def eval_program(self, program, env):
         result = None
@@ -113,7 +125,11 @@ class Evaluator:
                 return self.eval_native_integer_to_boolean_object(left, operator, right)
             else:
                 return self.new_error(f"operador no soportado para el tipo INTEGER: '{operator}'")
-
+        elif left.type() == obj.Type.STRING and right.type() == obj.Type.STRING:
+            if operator == '+':
+                return obj.String(value=left.value + right.value)
+            else:
+                return self.new_error(f"operador no soportado para el tipo STRING: '{operator}'")
         elif left.type() == obj.Type.BOOLEAN and right.type() == obj.Type.BOOLEAN:
             if operator in ('<', '>', '<=', '>=', '==', '!=', 'and', 'or'):
                 return self.eval_native_boolean_to_boolean_object(left, operator, right)

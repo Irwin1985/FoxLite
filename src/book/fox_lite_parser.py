@@ -191,10 +191,10 @@ class Parser:
         assignment ::= identifier '=' expression LBREAK
     """
     def assignment(self):
-        name = self.identifier()
+        ident = self.identifier()
         self.eat(TokenType.ASSIGN)
         value = self.expression()
-        return Assignment(name=name, value=value)
+        return Assignment(token=ident, value=value)
 
     """
         return_statement ::= 'return' (expression)?
