@@ -24,16 +24,27 @@ ERROR_FACE = """
 
 
 def repl():
-    print(FOX_LITE)
-    print('¡Hola Mundo! Este es lenguage de programación FoxLite')
-    print('¡Adelante! Ingresa algunos comandos...\n')
+    print_header()
     env = Environment()
+    source_code = ''
     while True:
         try:
-            source_code = input(">> ")
+            user_input = input(">> ")
         except EOFError:
             break
-        if not source_code:
+        if not user_input:
+            continue
+
+        if user_input[len(user_input)-1] == ';':
+            # Unimos la línea de código
+            source_code += '\n' + user_input[0:len(user_input)-1]
+            continue
+        else:
+            source_code += '\n' + user_input
+
+        if user_input == 'clear':
+            print(chr(27) + "[2J")
+            print_header()
             continue
 
         lexer = Lexer(source_code)
@@ -55,6 +66,12 @@ def print_parser_errors(errors):
     print(" parser errors:")
     for error in errors:
         print(error)
+
+
+def print_header():
+    print(FOX_LITE)
+    print('¡Hola Mundo! Este es lenguage de programación FoxLite')
+    print('¡Adelante! Ingresa algunos comandos...\n')
 
 
 if __name__ == '__main__':

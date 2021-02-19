@@ -4,6 +4,7 @@
 
 import src.book.fox_lite_ast as ast
 import src.book.fox_lite_object as obj
+import src.book.fox_lite_environment as environment
 
 
 TRUE = obj.Boolean(value=True)
@@ -18,7 +19,7 @@ class Evaluator:
             return self.eval_program(node, env)
         # Evaluar bloques de sentencias
         elif type(node) is ast.Block:
-            self.eval_block(node, env)
+            return self.eval_block(node, env)
         # Evaluar enteros
         elif type(node) is ast.Integer:
             return obj.Integer(value=node.value)
@@ -68,6 +69,59 @@ class Evaluator:
         # Evaluar identificadores
         elif type(node) is ast.Identifier:
             return self.eval_identifier(node, env)
+        # Sentencia If
+        elif type(node) is ast.IfStatement:
+            return self.eval_if_statement(node, env)
+        # Declaración de Función
+        elif type(node) is ast.FunctionDecl:
+            # Creamos el objeto Function
+            function = obj.Function(
+                name=node.name.value,
+                params=node.params,
+                body=node.body,
+                env=env,
+            )
+            env.set(function.name, function)
+            return function
+        # Llamada a Función
+        elif type(node) is ast.FunctionCall:
+            function = env.get(node.name.value)
+
+            if function is None:
+                return self.new_error(f"función no definida: '{node.name.value}'.")
+
+            if type(function) is not obj.Function:
+                return self.new_error(f"'{function.type()}' no es una función.")
+
+            args = self.eval_arguments(node.arguments, env)
+
+            if len(args) == 1 and self.is_error(args[0]):
+                return args[0]
+
+            return self.execute_function(function, args)
+        # Do While
+        elif type(node) is ast.DoWhile:
+            result = None
+            while True:
+                condition = self.eval(node.condition, env)
+
+                if self.is_error(condition):
+                    return condition
+
+                if condition == FALSE:
+                    break
+
+                result = self.eval(node.block, env)
+
+            return result
+        # Sentencia Return
+        elif type(node) is ast.ReturnStmt:
+            return_value = self.eval(node.value, env)
+
+            if self.is_error(return_value):
+                return return_value
+
+            return obj.Return(value=return_value)
 
     def eval_program(self, program, env):
         result = None
@@ -203,6 +257,44 @@ class Evaluator:
             left_val = obj.Integer(value=1 if left_val else 0)
             right_val = obj.Integer(value=1 if right_val else 0)
             return self.eval_native_integer_to_boolean_object(left_val, operator, right_val)
+
+    def eval_if_statement(self, node, env):
+        condition = self.eval(node.condition, env)
+
+        if self.is_error(condition):
+            return condition
+
+        if condition == TRUE:
+            return self.eval(node.consequence, env)
+        elif node.alternative is not None:
+            return self.eval(node.alternative, env)
+
+    def execute_function(self, function, args):
+        # Creamos un environment para la función que extienda del externo.
+        extended_env = environment.extend_environment(function.env)
+        # Registramos los símbolos de la función
+        for param_idx, param in enumerate(function.params):
+            extended_env.set(param.value, args[param_idx])
+
+        # Ejecutamos la función
+        evaluated = self.eval(function.body, extended_env)
+
+        if type(evaluated) is obj.Return:
+            return evaluated.value
+
+        return evaluated
+
+    def eval_arguments(self, args, env):
+        result = []
+        for arg in args:
+            exp = self.eval(arg, env)
+
+            if self.is_error(exp):
+                return [exp]
+
+            result.append(exp)
+
+        return result
 
     def new_error(self, message):
         return obj.Error(message=message)

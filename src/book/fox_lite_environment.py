@@ -51,7 +51,7 @@ class Environment:
         return None if result is None else result[1]
 
 
-def new_environment(parent):
+def extend_environment(parent):
     env = Environment()
     env.parent = parent
     return env
