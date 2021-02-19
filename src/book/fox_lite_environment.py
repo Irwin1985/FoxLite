@@ -6,9 +6,9 @@ from src.book.fox_lite_object import Error
 
 
 class Environment:
-    def __init__(self):
+    def __init__(self, parent=None):
         self.symbol_table = {}
-        self.parent = None
+        self.parent = parent
     """
     Resuelve el nombre de un símbolo dado.
     1. Primero busca el símbolo en el ámbito actual
@@ -16,7 +16,7 @@ class Environment:
     3. Si no existe entonces crea el símbolo 'private' por defecto.
     4. Si existe entonces actualiza el valor del símbolo.
     """
-    def set(self, name, val, scope='default'):
+    def set(self, name, val, scope='default', current_scope=False):
         # Buscamos el símbolo en el entorno actual
         result = self.symbol_table.get(name)
 
@@ -27,7 +27,7 @@ class Environment:
             result[1] = val  # Actualizamos el valor del símbolo.
             self.symbol_table[name] = result
         else:
-            if self.parent is not None:
+            if self.parent is not None and not current_scope:
                 result = self.parent.get(name)  # Buscamos el símbolo en el entorno padre.
                 if result is not None:
                     if result[0] in ('public', 'private'):  # Solo permitimos 'public' o 'private'
@@ -49,9 +49,3 @@ class Environment:
             result = self.parent.get(name)
 
         return None if result is None else result[1]
-
-
-def extend_environment(parent):
-    env = Environment()
-    env.parent = parent
-    return env

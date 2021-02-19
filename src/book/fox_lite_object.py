@@ -13,6 +13,7 @@ class Type(Enum):
     FUNCTION = "FUNCTION"
     RETURN = "RETURN"
     ERROR = "ERROR"
+    BUILTIN = "BUILTIN"
 
 
 class ObjectType:
@@ -105,4 +106,15 @@ class Error(Object):
 
     def type(self):
         return Type.ERROR
+
+
+class Builtin(Object):
+    def __init__(self, function):
+        self.function = function
+
+    def resolve(self):
+        return "builtin function"
+
+    def type(self):
+        return Type.BUILTIN
 

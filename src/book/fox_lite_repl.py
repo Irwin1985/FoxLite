@@ -42,11 +42,6 @@ def repl():
         else:
             source_code += '\n' + user_input
 
-        if user_input == 'clear':
-            print(chr(27) + "[2J")
-            print_header()
-            continue
-
         lexer = Lexer(source_code)
         parser = Parser(lexer)
         program = parser.program()
@@ -58,6 +53,8 @@ def repl():
         evaluated = evaluator.eval(node=program, env=env)
         if evaluated is not None:
             print(evaluated.resolve())
+
+        source_code = ''
 
 
 def print_parser_errors(errors):

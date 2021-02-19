@@ -86,14 +86,14 @@ class Lexer:
         return self.new_token(token_type, result)
 
     # Obtiene una secuencia de caracteres (string)
-    def string(self):
-        self.advance()  # Avanza el primer '"'
+    def string(self, string_delim):
+        self.advance()  # Avanza el primer delimitador del string.
         result = ''
-        while self.current_char is not None and self.current_char != '"':
+        while self.current_char is not None and self.current_char != string_delim:
             result += self.current_char
             self.advance()
 
-        self.advance()  # Avanzamos el segundo '"'
+        self.advance()  # Avanza el segundo delimitador del string.
         return self.new_token(TokenType.STRING, result)
 
     # Extrae el siguiente token desde el código fuente
@@ -130,8 +130,8 @@ class Lexer:
                 return self.dotted_indentifier()
 
             # Secuencia de caracteres (string)
-            if self.current_char == '"':
-                return self.string()
+            if self.current_char == '"' or self.current_char == "'":
+                return self.string(self.current_char)
 
             # Caracteres de 1 digito de longitud
             if self.current_char == '+':
