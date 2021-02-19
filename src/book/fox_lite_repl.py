@@ -42,6 +42,9 @@ def repl():
         else:
             source_code += '\n' + user_input
 
+        if user_input == 'quit':
+            break
+
         lexer = Lexer(source_code)
         parser = Parser(lexer)
         program = parser.program()

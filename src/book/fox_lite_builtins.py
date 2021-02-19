@@ -42,7 +42,34 @@ def type_func(args):
     return obj.String(value=type_value)
 
 
+def messagebox_func(args):
+    """
+    Muestra un cuadro de diálogo en pantalla.
+    :param args:
+    :return:
+    """
+    if len(args) != 2:
+        return obj.Error(message=f"número de argumentos inválidos. Se esperaban 2 y llegaron {len(args)}")
+
+    import ctypes
+    ctypes.windll.user32.MessageBoxW(None, args[0].resolve(), args[1].resolve(), 0)
+
+
+def alltrim_len(args):
+    """
+    Elimina los espacios en blanco a la izquierda y a la derecha de una cadena.
+    :param args:
+    :return:
+    """
+    if len(args) != 1:
+        return obj.Error(message=f"número de argumentos inválidos. Se esperaba 1 y llegaron {len(args)}")
+
+    return obj.String(value=args[0].resolve().strip())
+
+
 builtins = {
     "len": obj.Builtin(function=len_func),
     "type": obj.Builtin(function=type_func),
+    "messagebox": obj.Builtin(function=messagebox_func),
+    "alltrim": obj.Builtin(function=alltrim_len),
 }

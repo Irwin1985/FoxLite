@@ -136,3 +136,8 @@ class Assignment(AST):
 class ReturnStmt(AST):
     def __init__(self, value=None):
         self.value = value
+
+
+class PrintStmt(AST):
+    def __init__(self):
+        self.arguments = []

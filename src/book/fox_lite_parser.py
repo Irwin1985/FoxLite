@@ -16,6 +16,7 @@ from src.book.fox_lite_ast import (
     VariableDecl,
     Assignment,
     ReturnStmt,
+    PrintStmt,
 )
 
 """
@@ -114,6 +115,8 @@ class Parser:
             return self.assignment()
         elif self.cur_token.type == TokenType.RETURN:
             return self.return_statement()
+        elif self.cur_token.type == TokenType.PRINT:
+            return self.print_statement()
         else:
             return self.expression()
     """
@@ -209,6 +212,18 @@ class Parser:
             return_stmt.value = Boolean(value=True)
 
         return return_stmt
+
+    def print_statement(self):
+        print_stmt = PrintStmt()
+        self.eat(TokenType.PRINT)
+        print_stmt.arguments.append(self.expression())
+
+        while self.cur_token.type == TokenType.COMMA:
+            self.eat(TokenType.COMMA)
+            print_stmt.arguments.append(self.expression())
+
+        return print_stmt
+
     """
     expression ::= logicOr
     logicOr    ::= logicAnd ('or' logicAnd )*

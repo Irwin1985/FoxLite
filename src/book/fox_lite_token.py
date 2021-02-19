@@ -50,7 +50,6 @@ class TokenType(Enum):
     # Funciones
     FUNCTION = 'function'
     ENDFUNC = 'endfunc'
-    MESSAGEBOX = 'messagebox'
 
     # Do While
     DO = 'do'
@@ -89,7 +88,6 @@ class Token:
 keywords = {
     "function": TokenType.FUNCTION,
     "endfunc": TokenType.ENDFUNC,
-    "messagebox": TokenType.MESSAGEBOX,
     "do": TokenType.DO,
     "while": TokenType.WHILE,
     "enddo": TokenType.ENDDO,

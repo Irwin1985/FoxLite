@@ -287,6 +287,14 @@ class Evaluator:
                 return return_value
 
             return obj.Return(value=return_value)
+        # Sentencia Print
+        elif type(node) is ast.PrintStmt:
+            for argument in node.arguments:
+                result = self.eval(argument, env)
+                if is_error(result):
+                    return result
+                print(result.resolve(), end=" ")
+            print()  # Empty line
 
     def eval_program(self, program, env):
         result = None

@@ -46,6 +46,6 @@ class Environment:
         result = self.symbol_table.get(name)
 
         if result is None and self.parent is not None:
-            result = self.parent.get(name)
+            return self.parent.get(name)
 
         return None if result is None else result[1]
