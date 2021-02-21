@@ -1,5 +1,5 @@
 """
-Sistema de objetos de FoxLite
+Sistema de objetos: es la representación interna de los tipos de datos que ofrece FoxLite.
 """
 
 from enum import Enum
@@ -16,15 +16,11 @@ class Type(Enum):
     BUILTIN = "BUILTIN"
 
 
-class ObjectType:
-    pass
-
-
 class Object:
     def type(self):
         pass
 
-    def resolve(self):
+    def to_string(self):
         pass
 
 
@@ -32,7 +28,7 @@ class Integer(Object):
     def __init__(self, value):
         self.value = value
 
-    def resolve(self):
+    def to_string(self):
         return str(self.value)
 
     def type(self):
@@ -43,7 +39,7 @@ class Boolean(Object):
     def __init__(self, value):
         self.value = value
 
-    def resolve(self):
+    def to_string(self):
         return str(self.value)
 
     def type(self):
@@ -54,7 +50,7 @@ class Null(Object):
     def __init__(self):
         self.value = None
 
-    def resolve(self):
+    def to_string(self):
         return "Null"
 
     def type(self):
@@ -65,7 +61,7 @@ class String(Object):
     def __init__(self, value):
         self.value = value
 
-    def resolve(self):
+    def to_string(self):
         return self.value
 
     def type(self):
@@ -76,7 +72,7 @@ class Return(Object):
     def __init__(self, value):
         self.value = value
 
-    def resolve(self):
+    def to_string(self):
         return self.value
 
     def type(self):
@@ -90,7 +86,7 @@ class Function(Object):
         self.body = body
         self.env = env
 
-    def resolve(self):
+    def to_string(self):
         return "function"
 
     def type(self):
@@ -101,7 +97,7 @@ class Error(Object):
     def __init__(self, message):
         self.message = message
 
-    def resolve(self):
+    def to_string(self):
         return self.message
 
     def type(self):
@@ -112,9 +108,8 @@ class Builtin(Object):
     def __init__(self, function):
         self.function = function
 
-    def resolve(self):
+    def to_string(self):
         return "builtin function"
 
     def type(self):
         return Type.BUILTIN
-

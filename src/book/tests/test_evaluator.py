@@ -102,11 +102,11 @@ class TestEvaluator(unittest.TestCase):
     def assert_test_eval(self, source):
         lexer = Lexer(source)
         parser = Parser(lexer)
-        program = parser.parse()
+        program = parser.program()
         eva = Evaluator()
         env = Environment()
 
-        return eva.eval(node=program, env=env)
+        return eva.eval(ast_node=program, env=env)
 
 
 if __name__ == '__main__':

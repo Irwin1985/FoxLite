@@ -24,6 +24,14 @@ ERROR_FACE = """
 
 
 def repl():
+    """
+    REPL: se llama así por cada una de las fases que realiza durante 1 ciclo:
+    R: Read - Leer y analizar (parse) el código fuente.
+    E: Eval - Evaluar el AST generado por el parser.
+    P: Print - Imprimir el resultado en la consola.
+    L: Loop - Repetir el ciclo.
+    :return:
+    """
     print_header()
     env = Environment()
     source_code = ''
@@ -34,9 +42,10 @@ def repl():
             break
         if not user_input:
             continue
-
+        """
+        Usamos el ';' para unir declaraciones de más de 1 línea.
+        """
         if user_input[len(user_input)-1] == ';':
-            # Unimos la línea de código
             source_code += '\n' + user_input[0:len(user_input)-1]
             continue
         else:
@@ -51,11 +60,12 @@ def repl():
 
         if len(parser.errors) != 0:
             print_parser_errors(parser.errors)
+            break
 
         evaluator = Evaluator()
-        evaluated = evaluator.eval(node=program, env=env)
+        evaluated = evaluator.eval(ast_node=program, env=env)
         if evaluated is not None:
-            print(evaluated.resolve())
+            print(evaluated.to_string())
 
         source_code = ''
 
@@ -63,7 +73,7 @@ def repl():
 def print_parser_errors(errors):
     print(ERROR_FACE)
     print("¡Ay caramba! parece que tenemos un problema.")
-    print(" parser errors:")
+    print("Errores del Parser:")
     for error in errors:
         print(error)
 

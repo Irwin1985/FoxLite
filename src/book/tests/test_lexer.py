@@ -102,7 +102,7 @@ class TestLexer(unittest.TestCase):
 
         for expected_token in expected_tokens:
             actual = lexer.next_token()
-            self.assertEqual(expected_token.type, actual.type)
+            self.assertEqual(expected_token.type, actual.Type)
             self.assertEqual(expected_token.value, actual.value)
 
 

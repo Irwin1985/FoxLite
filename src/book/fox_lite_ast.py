@@ -1,4 +1,3 @@
-
 """
 Un AST del inglés (Abstract Syntax Tree) es un Árbol de Sintaxis Abstracta cuyo objetivo es representar la
 semántica del programa a evaluar.
@@ -6,21 +5,12 @@ semántica del programa a evaluar.
 
 
 class AST:
-    def string(self):
-        pass
+    pass
 
 
 class Program(AST):
     def __init__(self):
         self.statements = []
-
-    def string(self):
-        out = ""
-        if len(self.statements) > 0:
-            for statement in self.statements:
-                out += statement.string()
-
-        return out
 
 
 class Identifier(AST):
@@ -52,32 +42,12 @@ class Block(AST):
     def __init__(self):
         self.statements = []
 
-    def string(self):
-        out = ""
-        if len(self.statements) > 0:
-            for statement in self.statements:
-                out += statement.string()
-
-        return out
-
 
 class FunctionDecl(AST):
     def __init__(self, name, params=None, body=None):
         self.name = name
         self.params = params if params is not None else []
         self.body = body
-
-    def string(self):
-        out = "function " + self.name
-        out += "("
-        param_list = ""
-        if len(self.params) > 0:
-            for param in self.params:
-                param_list += param.string()
-            out += ",".join(param_list)
-        out += ")"
-
-        return out
 
 
 class DoWhile(AST):
@@ -90,9 +60,6 @@ class FunctionCall(AST):
     def __init__(self):
         self.name = None
         self.arguments = []
-
-    def string(self):
-        pass
 
 
 class IfStatement(AST):
@@ -108,17 +75,11 @@ class BinaryOp(AST):
         self.operator = operator
         self.right = right
 
-    def string(self):
-        pass
-
 
 class UnaryOp(AST):
     def __init__(self, operator, right):
         self.operator = operator
         self.right = right
-
-    def string(self):
-        pass
 
 
 class VariableDecl(AST):

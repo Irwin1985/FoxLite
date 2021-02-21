@@ -1,109 +1,156 @@
-"""
-  Lexer: también conocido como tokenizer, se encarga de leer y descomponer el código fuente en pequeñas unidades
-  llamadas tokens.
-"""
-
 from src.book.fox_lite_token import Token, TokenType, lookup_ident
 
 
+def is_space(ch):
+    """
+    Determina si el carácter es un espacio en blanco, tabulación o retorno de carro.
+    El Line Feed (ENTER) no lo ignoramos porque es relevante en FoxLite.
+    :param ch:
+    :return: Boolean
+    """
+    return ch in (' ', '\t', '\r')
+
+
+def is_letter(ch):
+    """
+    Determina si el carácter es alfanumérico o guion bajo.
+    :param ch:
+    :return:
+    """
+    return ch.isalpha() or ch.isdigit() or ch == '_'
+
+
 class Lexer:
+    """
+      Lexer: también conocido como tokenizer, se encarga de leer y descomponer
+      el código fuente en pequeñas unidades llamadas tokens.
+    """
     def __init__(self, source_code):
         self.source = source_code
         self.current_pos = 0
         self.current_char = self.source[self.current_pos]
         self.last_token_value = None
 
-    # Mostramos un error cuando nos encontremos un caracter extraño.
-    def error(self):
-        raise Exception(f'Error: caractér desconocido {self.current_char}')
-
-    # Crea un token y actualiza el último token generado.
     def new_token(self, token_type, token_value):
+        """
+        Crea un token y actualiza el tipo del último token generado.
+        :param token_type:
+        :param token_value:
+        :return: Token()
+        """
         token = Token(token_type=token_type, token_value=token_value)
         self.last_token_value = token_value
         return token
 
-    # Avanza un caracter en el código fuente
     def advance(self):
+        """
+        Avanza un carácter en el código fuente
+        :return:
+        """
         self.current_pos += 1
-        if self.current_pos > len(self.source) - 1:
+        if self.current_pos >= len(self.source):
             self.current_char = None
         else:
             self.current_char = self.source[self.current_pos]
 
-    # Mira 1 caracter hacia adelante en el código fuente
     def peek(self):
+        """
+        Mira 1 caracter hacia adelante en el código fuente.
+        :return: char
+        """
         peek_position = self.current_pos + 1
-        if peek_position > len(self.source) - 1:
+        if peek_position >= len(self.source):
             return None
         else:
             return self.source[peek_position]
 
-    # Ignoramos los comentarios
     def ignore_comments(self):
-        # Avanzamos los caracteres hasta el final de la línea
+        """
+        Ignora los comentarios de FoxLite '&&'
+        Avanza los caracteres hasta el final de la línea.
+        :return: None
+        """
         while self.current_char is not None and self.current_char != '\n':
             self.advance()
 
     # Ignoramos los espacios en blanco
     def ignore_blanks(self):
+        """
+        Ignora los espacios en blanco, tabulaciones y retornos de carro.
+        :return: None
+        """
         # Avanzamos los caracteres mientras hayan espacios o EOF
         while self.current_char is not None and is_space(self.current_char):
             self.advance()
 
-    # Obtiene un entero
     def number(self):
-        result = ''
+        """
+        Extrae un número entero y genera un token de tipo INT.
+        :return: Token()
+        """
+        lexeme = ''
         while self.current_char is not None and self.current_char.isdigit():
-            result += self.current_char
+            lexeme += self.current_char
             self.advance()
 
-        return self.new_token(TokenType.INT, result)
+        return self.new_token(TokenType.INT, lexeme)
 
-    # Obtiene un identificador
     def identifier(self):
-        result = ''
+        """
+        Obtiene un identificador.
+        :return: Token()
+        """
+        lexeme = ''
         while self.current_char is not None and is_letter(self.current_char):
-            result += self.current_char
+            lexeme += self.current_char
             self.advance()
 
-        token_type = lookup_ident(result)
-        return self.new_token(token_type, result)
+        token_type = lookup_ident(lexeme)
+        return self.new_token(token_type, lexeme)
 
-    # Obtiene una palabra reservada de entre 2 puntos ej: .t., .f., .null.
     def dotted_indentifier(self):
-        result = '.'
+        """
+        Extrae un identificador encerrado con '.' ej: .t., .f., .null.
+        :return: Token()
+        """
+        lexeme = '.'
         self.advance()  # Avanza el primer punto '.'
 
         while self.current_char is not None and self.current_char != '.':
-            result += self.current_char
+            lexeme += self.current_char
             self.advance()
 
-        result += '.'
+        lexeme += '.'
         self.advance()  # Avanza el segundo punto '.'
 
-        token_type = lookup_ident(result)
-        return self.new_token(token_type, result)
+        token_type = lookup_ident(lexeme)
+        return self.new_token(token_type, lexeme)
 
-    # Obtiene una secuencia de caracteres (string)
     def string(self, string_delim):
+        """
+        Obtiene una secuencia de caracteres (string)
+        :param string_delim: Foxlite permite comilla simple y doble.
+        :return: Token()
+        """
         self.advance()  # Avanza el primer delimitador del string.
-        result = ''
+        lexeme = ''
         while self.current_char is not None and self.current_char != string_delim:
-            result += self.current_char
+            lexeme += self.current_char
             self.advance()
 
         self.advance()  # Avanza el segundo delimitador del string.
-        return self.new_token(TokenType.STRING, result)
+        return self.new_token(TokenType.STRING, lexeme)
 
-    # Extrae el siguiente token desde el código fuente
     def next_token(self):
+        """
+        Extrae el siguiente token desde el código fuente.
+        :return: Token()
+        """
         while self.current_char is not None:
-
             # Salto de Línea
             if self.current_char == '\n':
                 self.advance()  # Avanza el '\n'
-                # Si el último token es un salto de línea entonces ignoramos este.
+                # Si el token anterior no es LBREAK entonces generamos el token LBREAK.
                 if self.last_token_value is not None and self.last_token_value != 'LBREAK':
                     return self.new_token(TokenType.LBREAK, 'LBREAK')
 
@@ -195,25 +242,11 @@ class Lexer:
 
                 return self.new_token(TokenType.GREATER, '>')
 
-            # Caracter de impresión
+            # Carácter de impresión
             if self.current_char == '?':
                 self.advance()
                 return self.new_token(TokenType.PRINT, '?')
 
-            self.error()  # Caracter desconocido
+            raise Exception(f"Error: carácter desconocido '{self.current_char}'")
 
         return self.new_token(TokenType.EOF, None)
-
-
-"""
- Métodos Helper del Lexer
-"""
-
-
-def is_space(ch):
-    return ch in (' ', '\t', '\r')
-
-
-def is_letter(ch):
-    return ch.isalpha() or ch.isdigit() or ch == '_'
-

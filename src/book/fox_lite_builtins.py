@@ -52,7 +52,7 @@ def messagebox_func(args):
         return obj.Error(message=f"número de argumentos inválidos. Se esperaban 2 y llegaron {len(args)}")
 
     import ctypes
-    ctypes.windll.user32.MessageBoxW(None, args[0].resolve(), args[1].resolve(), 0)
+    ctypes.windll.user32.MessageBoxW(None, args[0].to_string(), args[1].to_string(), 0)
 
 
 def alltrim_len(args):
@@ -64,7 +64,10 @@ def alltrim_len(args):
     if len(args) != 1:
         return obj.Error(message=f"número de argumentos inválidos. Se esperaba 1 y llegaron {len(args)}")
 
-    return obj.String(value=args[0].resolve().strip())
+    if args[0].type() != obj.Type.STRING:
+        return obj.Error(message=f"el tipo {args[0].type()} no es soportado por la función alltrim().")
+
+    return obj.String(value=args[0].to_string().strip())
 
 
 builtins = {

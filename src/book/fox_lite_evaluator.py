@@ -1,7 +1,3 @@
-"""
-    Evaluador del programa.
-"""
-
 import src.book.fox_lite_ast as ast
 import src.book.fox_lite_object as obj
 import src.book.fox_lite_environment as environment
@@ -13,35 +9,44 @@ FALSE = obj.Boolean(value=False)
 NULL = obj.Null()
 
 
-def is_error(node):
+def is_error(value_obj):
     """
-    Verifica si el objeto resultante es de tipo obj.Error()
-    :param node:
-    :return:
+    Verifica si el objeto dato es de tipo obj.Error()
+    :param value_obj:
+    :return: obj
     """
-    return node is not None and node.type() == obj.Type.ERROR
+    return value_obj is not None and value_obj.type() == obj.Type.ERROR
+
+
+def is_relational_operator(operator):
+    """
+    Determina si el operador dado es de origen relacional.
+    :param operator:
+    :return: Boolean
+    """
+    return operator in ('<', '>', '<=', '>=', '==', '!=')
 
 
 def new_error(message):
     """
     Retorna un objeto de tipo obj.Error() con la información del error.
     :param message:
-    :return:
+    :return: obj.Error()
     """
     return obj.Error(message=message)
 
 
-def eval_native_integer_to_boolean_object(left, operator, right):
+def eval_native_integer_to_boolean_object(left_obj, operator, right_obj):
     """
     Evalúa los operandos integer nativo a objeto boolean.
     Las operaciónes realizadas son relacionales.
-    :param left:
+    :param left_obj:
     :param operator:
-    :param right:
-    :return:
+    :param right_obj:
+    :return: obj.Boolean()
     """
-    left_val = left.value
-    right_val = right.value
+    left_val = left_obj.value
+    right_val = right_obj.value
 
     if operator == '<':
         return TRUE if left_val < right_val else FALSE
@@ -55,48 +60,39 @@ def eval_native_integer_to_boolean_object(left, operator, right):
         return TRUE if left_val == right_val else FALSE
     elif operator == '!=':
         return TRUE if left_val != right_val else FALSE
-    else:
-        return new_error(f"operador desconocido: '{operator}'")
 
 
-def eval_native_boolean_to_boolean_object(left, operator, right):
+def eval_native_boolean_to_boolean_object(left_obj, operator, right_obj):
     """
     Evalúa los operandos boolean nativo a objeto boolean.
-    Las operaciones realizadas son lógicas.
-    :param left:
+    Las operaciones realizadas son relacionales.
+    Como los operados son de tipo Boolean, primero se tienen que
+    convertir a su equivalente numérico. (.f. => 0, .t. => 1)
+    :param left_obj:
     :param operator:
-    :param right:
-    :return:
+    :param right_obj:
+    :return: obj.Boolean()
     """
-    left_val = left.value
-    right_val = right.value
+    left_val = left_obj.value
+    right_val = right_obj.value
 
-    if operator == 'and':
-        return TRUE if left_val and right_val else FALSE
-    elif operator == 'or':
-        if left_val:
-            return TRUE  # No hace falta evaluar el segundo operando.
-        elif right_val:
-            return TRUE
-        else:
-            return FALSE
-    else:
-        left_val = obj.Integer(value=1 if left_val else 0)
-        right_val = obj.Integer(value=1 if right_val else 0)
-        return eval_native_integer_to_boolean_object(left_val, operator, right_val)
+    left_obj = obj.Integer(value=1 if left_val else 0)
+    right_obj = obj.Integer(value=1 if right_val else 0)
+
+    return eval_native_integer_to_boolean_object(left_obj, operator, right_obj)
 
 
-def eval_native_integer_to_integer_object(left, operator, right):
+def eval_native_integer_to_integer_object(left_obj, operator, right_obj):
     """
     Evalúa los operandos integer nativo a objeto integer.
     Las operaciones realizadas son aritméticas.
-    :param left:
+    :param left_obj:
     :param operator:
-    :param right:
-    :return:
+    :param right_obj:
+    :return: obj.Integer()
     """
-    left_val = left.value
-    right_val = right.value
+    left_val = left_obj.value
+    right_val = right_obj.value
 
     if operator == '+':
         return obj.Integer(value=left_val + right_val)
@@ -106,268 +102,333 @@ def eval_native_integer_to_integer_object(left, operator, right):
         return obj.Integer(value=left_val * right_val)
     elif operator == '/':
         if right_val == 0:
-            return new_error("división por cero.")
+            return new_error("División por cero.")
         return obj.Integer(value=left_val / right_val)
-    else:
-        return new_error(f"operador desconocido: '{operator}'")
 
 
-def eval_binary_expression(left, operator, right):
+def eval_native_string_to_object(left_obj, operator, right_obj):
+    """
+    Evalúa los operandos string nativo a objeto string.
+    Las operaciones realizadas son aritméticas.
+    :param left_obj:
+    :param operator:
+    :param right_obj:
+    :return: object
+    """
+    left_val = left_obj.value
+    right_val = right_obj.value
+
+    if operator == '+':
+        return obj.String(value=left_val + right_val)
+    elif operator == '==':
+        return obj.Boolean(value=left_val == right_val)
+    elif operator == '!=':
+        return obj.Boolean(value=left_val != right_val)
+
+
+def eval_binary_expression(left_obj, operator, right_obj):
     """
     Realiza operaciones binarias y devuelve el objeto correspondiente.
-    :param left:
+    :param left_obj:
     :param operator:
-    :param right:
-    :return:
+    :param right_obj:
+    :return: object
     """
-    if left.type() == obj.Type.INTEGER and right.type() == obj.Type.INTEGER:
+    if left_obj.type() == obj.Type.INTEGER and right_obj.type() == obj.Type.INTEGER:
         if operator in ('+', '-', '*', '/'):
-            return eval_native_integer_to_integer_object(left, operator, right)
-        elif operator in ('<', '>', '<=', '>=', '==', '!='):
-            return eval_native_integer_to_boolean_object(left, operator, right)
+            return eval_native_integer_to_integer_object(left_obj, operator, right_obj)
+        elif is_relational_operator(operator):
+            return eval_native_integer_to_boolean_object(left_obj, operator, right_obj)
         else:
-            return new_error(f"operador no soportado para el tipo INTEGER: '{operator}'")
-    elif left.type() == obj.Type.STRING and right.type() == obj.Type.STRING:
-        if operator == '+':
-            return obj.String(value=left.value + right.value)
+            return new_error(f"Operador no soportado para el tipo INTEGER: '{operator}'")
+
+    elif left_obj.type() == obj.Type.STRING and right_obj.type() == obj.Type.STRING:
+        if operator in ('+', '==', '!='):
+            return eval_native_string_to_object(left_obj, operator, right_obj)
         else:
-            return new_error(f"operador no soportado para el tipo STRING: '{operator}'")
-    elif left.type() == obj.Type.BOOLEAN and right.type() == obj.Type.BOOLEAN:
-        if operator in ('<', '>', '<=', '>=', '==', '!=', 'and', 'or'):
-            return eval_native_boolean_to_boolean_object(left, operator, right)
+            return new_error(f"Operador no soportado para el tipo STRING: '{operator}'")
+
+    elif left_obj.type() == obj.Type.BOOLEAN and right_obj.type() == obj.Type.BOOLEAN:
+        if is_relational_operator(operator):
+            return eval_native_boolean_to_boolean_object(left_obj, operator, right_obj)
         else:
-            return new_error(f"operador no soportado para el tipo BOOLEAN: '{operator}'")
+            return new_error(f"Operador no soportado para el tipo BOOLEAN: '{operator}'")
 
-    elif left.type() != right.type():
-        return new_error(f'incompatibilidad de tipos: {left.type()}, {right.type()}')
+    elif left_obj.type() != right_obj.type():
+        return new_error(f'Incompatibilidad de tipos: {left_obj.type()}, {right_obj.type()}')
 
 
-def eval_unary_expression(operator, right):
+def eval_unary_expression(operator, right_obj):
     """
     Realiza las operaciones unarias y devuelve el objeto resultante.
     :param operator:
-    :param right:
-    :return:
+    :param right_obj:
+    :return: object
     """
     if operator == "!":
-        if right.type() != obj.Type.BOOLEAN:
-            new_error("tipo de dato incompatible. Se esperaba un BOOLEAN")
-        elif right == TRUE:
+        if right_obj.type() != obj.Type.BOOLEAN:
+            return new_error("Tipo de dato incompatible. Se esperaba un BOOLEAN")
+        elif right_obj == TRUE:
             return FALSE
-        elif right == FALSE:
+        elif right_obj == FALSE:
             return TRUE
     elif operator == "-":
-        if right.type() != obj.Type.INTEGER:
-            new_error("tipo de dato incompatible. Se esperaba un INTEGER")
+        if right_obj.type() != obj.Type.INTEGER:
+            return new_error("Tipo de dato incompatible. Se esperaba un INTEGER")
         else:
-            return obj.Integer(value=-right.value)
+            return obj.Integer(value=-right_obj.value)
 
 
-def eval_identifier(node, env):
+def eval_identifier(ast_node, env):
     """
-    Resuelve el valor de un identificador.
-    :param node:
+    Evalúa el valor de un identificador.
+    :param ast_node:
     :param env:
-    :return:
+    :return: object
     """
-    val = env.get(node.value)
-    if val is None:
-        return new_error(f"variable '{node.value}' no definida.")
+    val_obj = env.get(ast_node.value)
+    if val_obj is None:
+        return new_error(f"Variable '{ast_node.value}' no definida.")
 
-    return val
+    return val_obj
+
+
+def extend_function_env(func_obj, arguments):
+    """
+    Crea un nuevo environment para la función dada.
+    :param func_obj:
+    :param arguments:
+    :return: Environment
+    """
+    extended_env = environment.Environment(parent=func_obj.env)
+    # Registramos los símbolos de la función
+    for param_idx, param in enumerate(func_obj.params):
+        extended_env.set(
+            name=param.value,
+            val=arguments[param_idx],
+            scope='default',
+            current_scope=True)
+
+    return extended_env
 
 
 class Evaluator:
-    def eval(self, node, env):
+    def eval(self, ast_node, env):
         # Evaluar el programa principal
-        if type(node) is ast.Program:
-            return self.eval_program(node, env)
+        if type(ast_node) is ast.Program:
+            return self.eval_program(ast_node, env)
         # Evaluar bloques de sentencias
-        elif type(node) is ast.Block:
-            return self.eval_block(node, env)
-        # Evaluar enteros
-        elif type(node) is ast.Integer:
-            return obj.Integer(value=node.value)
+        elif type(ast_node) is ast.Block:
+            return self.eval_block(ast_node, env)
+        # Evaluar Integer
+        elif type(ast_node) is ast.Integer:
+            return obj.Integer(value=ast_node.value)
         # Evaluar String
-        elif type(node) is ast.String:
-            return obj.String(value=node.value)
-        # Evaluar booleanos
-        elif type(node) is ast.Boolean:
-            return TRUE if node.value else FALSE
+        elif type(ast_node) is ast.String:
+            return obj.String(value=ast_node.value)
+        # Evaluar Boolean
+        elif type(ast_node) is ast.Boolean:
+            return TRUE if ast_node.value else FALSE
         # Evaluar Null
-        elif type(node) is ast.Null:
+        elif type(ast_node) is ast.Null:
             return NULL
         # Evaluar expresiones unarias
-        elif type(node) is ast.UnaryOp:
-            operator = node.operator
-            right = self.eval(node.right, env)
+        elif type(ast_node) is ast.UnaryOp:
+            operator = ast_node.operator
+            right_obj = self.eval(ast_node.right, env)
 
-            if is_error(right):
-                return right
+            if is_error(right_obj):
+                return right_obj
 
-            return eval_unary_expression(operator, right)
+            return eval_unary_expression(operator, right_obj)
         # Evaluar expresiones binarias
-        elif type(node) is ast.BinaryOp:
-            operator = node.operator
+        elif type(ast_node) is ast.BinaryOp:
+            operator = ast_node.operator
 
-            left = self.eval(node.left, env)
-            if is_error(left):
-                return left
+            if operator in ('or', 'and'):
+                # Invocamos directamente sin evaluar los operandos.
+                return self.eval_logical_expression(ast_node, env)
 
-            right = self.eval(node.right, env)
-            if is_error(right):
-                return right
+            left_obj = self.eval(ast_node.left, env)
+            if is_error(left_obj):
+                return left_obj
 
-            return eval_binary_expression(left, operator, right)
+            right_obj = self.eval(ast_node.right, env)
+            if is_error(right_obj):
+                return right_obj
+
+            return eval_binary_expression(left_obj, operator, right_obj)
         # Evaluar declaraciónes de Variables
-        elif type(node) is ast.VariableDecl:
+        elif type(ast_node) is ast.VariableDecl:
             #  Las variables por defecto se declaran en .F.
-            return env.set(node.token.value, FALSE, node.scope)
+            return env.set(ast_node.token.value, FALSE, ast_node.scope)
         # Evaluar asignaciones de Variables
-        elif type(node) is ast.Assignment:
+        elif type(ast_node) is ast.Assignment:
             # Resolvemos su valor antes de guardarlo en la Tabla de Símbolos.
-            val = self.eval(node.value, env)
-            if is_error(val):
-                return val
+            val_obj = self.eval(ast_node.value, env)
+            if is_error(val_obj):
+                return val_obj
 
-            return env.set(node.token.value, val)
+            return env.set(ast_node.token.value, val_obj)
         # Evaluar identificadores
-        elif type(node) is ast.Identifier:
-            return eval_identifier(node, env)
+        elif type(ast_node) is ast.Identifier:
+            return eval_identifier(ast_node, env)
         # Sentencia If
-        elif type(node) is ast.IfStatement:
-            return self.eval_if_statement(node, env)
+        elif type(ast_node) is ast.IfStatement:
+            return self.eval_if_statement(ast_node, env)
         # Declaración de Función
-        elif type(node) is ast.FunctionDecl:
+        elif type(ast_node) is ast.FunctionDecl:
             # Creamos el objeto Function
             function = obj.Function(
-                name=node.name.value,
-                params=node.params,
-                body=node.body,
+                name=ast_node.name.value,
+                params=ast_node.params,
+                body=ast_node.body,
                 env=env,
             )
             env.set(function.name, function)
             return function
         # Llamada a Función
-        elif type(node) is ast.FunctionCall:
-            function = env.get(node.name.value)
+        elif type(ast_node) is ast.FunctionCall:
+            function = env.get(ast_node.name.value)
 
             if function is None:
                 # Intentamos buscar la función como builtin
-                function = builtins.get(node.name.value)
+                function = builtins.get(ast_node.name.value)
                 if function is None:
-                    return new_error(f"función no definida: '{node.name.value}'.")
+                    return new_error(f"Función no definida: '{ast_node.name.value}'.")
 
-            args = self.eval_arguments(node.arguments, env)
+            arguments = self.eval_arguments(ast_node.arguments, env)
 
-            if len(args) == 1 and is_error(args[0]):
-                return args[0]
+            if len(arguments) == 1 and is_error(arguments[0]):
+                return arguments[0]
 
-            return self.execute_function(function, args)
+            return self.execute_function(function, arguments)
         # Do While
-        elif type(node) is ast.DoWhile:
-            result = None
+        elif type(ast_node) is ast.DoWhile:
             while True:
-                condition = self.eval(node.condition, env)
+                condition_obj = self.eval(ast_node.condition, env)
 
-                if is_error(condition):
-                    return condition
+                if is_error(condition_obj):
+                    return condition_obj
 
-                if condition == FALSE:
+                if condition_obj == FALSE:
                     break
 
-                result = self.eval(node.block, env)
+                result_obj = self.eval(ast_node.block, env)
+                if result_obj is not None:
+                    if result_obj.type() == obj.Type.RETURN:
+                        return result_obj.value  # Se retorna la expresión del return.
+                    elif result_obj.type() == obj.Type.ERROR:
+                        return result_obj  # Se retorna el objeto obj.Error().
 
-            return result
         # Sentencia Return
-        elif type(node) is ast.ReturnStmt:
-            return_value = self.eval(node.value, env)
+        elif type(ast_node) is ast.ReturnStmt:
+            return_obj = self.eval(ast_node.value, env)
 
-            if is_error(return_value):
-                return return_value
+            if is_error(return_obj):
+                return return_obj
 
-            return obj.Return(value=return_value)
+            return obj.Return(value=return_obj)
         # Sentencia Print
-        elif type(node) is ast.PrintStmt:
-            for argument in node.arguments:
-                result = self.eval(argument, env)
-                if is_error(result):
-                    return result
-                print(result.resolve(), end=" ")
+        elif type(ast_node) is ast.PrintStmt:
+            for argument in ast_node.arguments:
+                result_obj = self.eval(argument, env)
+                if is_error(result_obj):
+                    return result_obj
+                print(result_obj.to_string(), end=" ")
             print()  # Empty line
 
     def eval_program(self, program, env):
-        result = None
+        result_obj = None
 
         for statement in program.statements:
-            result = self.eval(statement, env)
+            result_obj = self.eval(statement, env)
 
-            if result is not None:
-                if result.type() == obj.Type.RETURN:
-                    return result.value  # Se retorna la expresión del return.
-                elif result.type() == obj.Type.ERROR:
-                    return result  # Se retorna el objeto error.
+            if result_obj is not None:
+                if result_obj.type() == obj.Type.RETURN:
+                    return result_obj.value  # Se retorna la expresión del return.
+                elif result_obj.type() == obj.Type.ERROR:
+                    return result_obj  # Se retorna el objeto error.
 
-        return result
+        return result_obj
 
     def eval_block(self, block, env):
-        result = None
+        result_obj = None
 
         for statement in block.statements:
-            result = self.eval(statement, env)
-            if is_error(result):
-                return result
+            result_obj = self.eval(statement, env)
+            if is_error(result_obj):
+                return result_obj
 
-            if result is not None and result.type() in (obj.Type.ERROR, obj.Type.RETURN):
-                return result
+            if result_obj is not None and result_obj.type() in (obj.Type.ERROR, obj.Type.RETURN):
+                return result_obj
 
-        return result
+        return result_obj
 
-    def eval_if_statement(self, node, env):
-        condition = self.eval(node.condition, env)
+    def eval_if_statement(self, ast_node, env):
+        condition_obj = self.eval(ast_node.condition, env)
 
-        if is_error(condition):
-            return condition
+        if is_error(condition_obj):
+            return condition_obj
 
-        if condition == TRUE:
-            return self.eval(node.consequence, env)
-        elif node.alternative is not None:
-            return self.eval(node.alternative, env)
+        if condition_obj == TRUE:
+            return self.eval(ast_node.consequence, env)
+        elif ast_node.alternative is not None:
+            return self.eval(ast_node.alternative, env)
 
-    def execute_function(self, func, args):
+    def execute_function(self, func, arguments):
         if type(func) is obj.Function:
-            extended_env = extend_function_env(func, args)
+            extended_env = extend_function_env(func, arguments)
             # Ejecutamos el cuerpo de la función
-            evaluated = self.eval(func.body, extended_env)
-            if type(evaluated) is obj.Return:
-                return evaluated.value
+            evaluated_obj = self.eval(func.body, extended_env)
+            if type(evaluated_obj) is obj.Return:
+                return evaluated_obj.value
 
-            return evaluated
+            return evaluated_obj
         elif type(func) is obj.Builtin:
-            return func.function(args)
+            return func.function(arguments)
         else:
             return new_error(f"{func.type()} no es una función.")
 
-    def eval_arguments(self, args, env):
-        result = []
-        for argument in args:
-            evaluated = self.eval(argument, env)
-            if is_error(evaluated):
-                return [evaluated]
+    def eval_arguments(self, arguments, env):
+        evaluated_arguments = []
+        for argument in arguments:
+            evaluated_obj = self.eval(argument, env)
+            if is_error(evaluated_obj):
+                return [evaluated_obj]
 
-            result.append(evaluated)
+            evaluated_arguments.append(evaluated_obj)
 
-        return result
+        return evaluated_arguments
 
+    def eval_logical_expression(self, ast_node, env):
+        """
+        Realiza operaciónes lógicas entre 2 booleanos.
+        :param ast_node: ast.BinaryOp()
+        :param env: Environment()
+        :return: obj.Boolean()
+        """
+        # Evaluamos primero el operando de la izquierda.
+        left_obj = self.eval(ast_node.left, env)
+        if is_error(left_obj):
+            return left_obj
 
-def extend_function_env(func, args):
-    extended_env = environment.Environment(parent=func.env)
-    # Registramos los símbolos de la función
-    for param_idx, param in enumerate(func.params):
-        extended_env.set(
-            name=param.value,
-            val=args[param_idx],
-            scope='default',
-            current_scope=True)
+        if left_obj.type() != obj.Type.BOOLEAN:
+            return new_error(f"Los operadores AND y OR solo soportan operandos de tipo BOOLEAN.")
 
-    return extended_env
+        if ast_node.operator == 'and':
+            if left_obj == FALSE:
+                return FALSE
+        elif ast_node.operator == 'or':
+            if left_obj == TRUE:
+                return TRUE
+
+        # La operación depende del operando de la derecha así que lo evaluamos.
+        right_obj = self.eval(ast_node.right, env)
+        if is_error(right_obj):
+            return right_obj
+
+        if right_obj.type() != obj.Type.BOOLEAN:
+            return new_error(f"Los operadores AND y OR solo soportan operandos de tipo BOOLEAN.")
+
+        return TRUE if right_obj == TRUE else FALSE

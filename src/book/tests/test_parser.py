@@ -344,7 +344,7 @@ class TestParser(unittest.TestCase):
         lexer = Lexer("foobar")
         parser = Parser(lexer)
 
-        program = parser.parse()
+        program = parser.program()
         self.assert_check_parser_errors(parser)
 
         self.assertEqual(1, len(program.statements),
