@@ -80,7 +80,7 @@ def print_parser_errors(errors):
 
 def print_header():
     print(FOX_LITE)
-    print('¡Hola Mundo! Este es lenguage de programación FoxLite')
+    print('¡Hola Mundo! Este es lenguaje de programación FoxLite')
     print('¡Adelante! Ingresa algunos comandos...\n')
 
 

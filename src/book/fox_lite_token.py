@@ -1,18 +1,20 @@
 """
-   Clase Token: representa la unidad más pequeña en la construcción del lenguaje. Será utilizado por el lexer
-   para descomponer el código fuente y por el parser para validar la gramática y crear el AST.
+   Clase Token: representa la unidad más pequeña en la construcción del
+   lenguaje. Será utilizado por el lexer para descomponer el código
+   fuente y por el parser para validar la gramática y crear el AST.
 """
 
 from enum import Enum
 
 
 class TokenType(Enum):
-
-    # Fin del código fuente
-    EOF = 'EOF'
-
-    # Nueva línea
-    LBREAK = 'LBREAK'
+    """
+       Clase TokenType: representa la unidad más pequeña en la construcción del
+       lenguaje. Será utilizado por el lexer para descomponer el código
+       fuente y por el parser para validar la gramática y crear el AST.
+    """
+    EOF = 'EOF'  # Fin del código fuente
+    LBREAK = 'LBREAK'  # Nueva línea
 
     # Identificadores y Literales
     IDENT = 'IDENT'  # add, foobar, x, y, ...
@@ -107,5 +109,11 @@ keywords = {
 
 
 def lookup_ident(ident):
-    tok = keywords.get(ident)
-    return tok if tok is not None else TokenType.IDENT
+    """
+    Comprueba si el string es una palabra reservada
+    o un identificador.
+    :param ident: string a evaluar.
+    :return: TokenType
+    """
+    token_type = keywords.get(ident)
+    return token_type if token_type is not None else TokenType.IDENT

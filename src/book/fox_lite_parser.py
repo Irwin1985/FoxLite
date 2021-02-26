@@ -15,24 +15,24 @@ statement       ::= public_decl
                 | return_decl
                 | print_decl
                 | expression_decl
-public_decl     ::= 'public' identifier LBREAK
-local_decl      ::= 'local' identifier LBREAK
-private_decl    ::= 'private' identifier LBREAK
-function_decl   ::= 'function' '(' ( arguments )? ')' block 'endfunc'
+public_decl     ::= 'public' identifier
+local_decl      ::= 'local' identifier
+private_decl    ::= 'private' identifier
+function_decl   ::= 'function' '(' ( params )? ')' block 'endfunc'
 do_while_decl   ::= 'do while' expression_decl block 'enddo'
 if_decl         ::= 'if' expression_decl block ('else' block)? 'endif'
-assignment_decl ::= identifier '=' expression_decl LBREAK
+assignment_decl ::= identifier '=' expression_decl
 return_decl     ::= 'return' expression_decl
 print_decl      ::= '?' expression_decl ( ',' expression_decl)*
-expression_decl ::= logic_or
+expression_decl ::= logic_or (LBREAK)?
 logic_or         ::= logic_and ('or' logic_and )*
 logic_and        ::= equality ('and' equality )*
 equality        ::= comparison ( ('==' | '!=') comparison )*
 comparison      ::= term ( ( '<' | '>' | '<=' | '>=' ) term )*
 term            ::= factor ( ( '+' | '-' ) factor )*
 factor          ::= unary ( ( '*' | '/' ) unary )*
-unary           ::= ( '!' | '-') unary | functionCall
-functionCall    ::= primary ( '(' arguments? ')' )?
+unary           ::= ( '!' | '-') unary | function_call
+function_call    ::= primary ( '(' arguments? ')' )?
 primary         ::= '.t.' | '.f.' | '.null.' | NUMBER | STRING | IDENTIFIER | '(' expression_decl ')'
 """
 
@@ -156,7 +156,7 @@ class Parser:
         var_token = self.identifier()
         return ast.VariableDecl(token=var_token, scope='private')
     """
-        function_decl ::= 'function' identifier '(' ( parameters )? ')'
+        function_decl ::= 'function' identifier '(' ( params )? ')'
     """
     def function_decl(self):
         self.eat(TokenType.FUNCTION)
@@ -206,7 +206,7 @@ class Parser:
 
         return if_stmt
     """
-        assignment_decl ::= identifier '=' expression_decl LBREAK
+        assignment_decl ::= identifier '=' expression_decl
     """
     def assignment_decl(self):
         ident = self.identifier()
@@ -360,7 +360,7 @@ class Parser:
         else:
             return self.function_call()
     """
-    functionCall ::= primary ( '(' arguments? ')' )?   
+    function_call ::= primary ( '(' arguments? ')' )?   
     """
     def function_call(self):
         primary = self.primary()

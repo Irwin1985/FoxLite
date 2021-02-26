@@ -22,20 +22,20 @@ def is_letter(ch):
 
 class Lexer:
     """
-      Lexer: también conocido como tokenizer, se encarga de leer y descomponer
-      el código fuente en pequeñas unidades llamadas tokens.
+      Lexer: también conocido como tokenizer, se encarga de leer y
+      descomponer el código fuente en pequeñas unidades llamadas tokens.
     """
     def __init__(self, source_code):
         self.source = source_code
-        self.current_pos = 0
+        self.current_pos = 0  # Mantiene la posición del carácter actual.
         self.current_char = self.source[self.current_pos]
-        self.last_token_value = None
+        self.last_token_value = None  # Último valor del token generado.
 
     def new_token(self, token_type, token_value):
         """
-        Crea un token y actualiza el tipo del último token generado.
-        :param token_type:
-        :param token_value:
+        Crea un token y actualiza el valor del último token generado.
+        :param token_type: el tipo del token a generar.
+        :param token_value: el valor o lexema del token a generar.
         :return: Token()
         """
         token = Token(token_type=token_type, token_value=token_value)
@@ -44,8 +44,7 @@ class Lexer:
 
     def advance(self):
         """
-        Avanza un carácter en el código fuente
-        :return:
+        Mueve el puntero a la siguiente posición del código fuente.
         """
         self.current_pos += 1
         if self.current_pos >= len(self.source):
@@ -64,15 +63,6 @@ class Lexer:
         else:
             return self.source[peek_position]
 
-    def ignore_comments(self):
-        """
-        Ignora los comentarios de FoxLite '&&'
-        Avanza los caracteres hasta el final de la línea.
-        :return: None
-        """
-        while self.current_char is not None and self.current_char != '\n':
-            self.advance()
-
     # Ignoramos los espacios en blanco
     def ignore_blanks(self):
         """
@@ -81,6 +71,15 @@ class Lexer:
         """
         # Avanzamos los caracteres mientras hayan espacios o EOF
         while self.current_char is not None and is_space(self.current_char):
+            self.advance()
+
+    def ignore_comments(self):
+        """
+        Ignora los comentarios de FoxLite '&&'
+        Avanza los caracteres hasta el final de la línea.
+        :return: None
+        """
+        while self.current_char is not None and self.current_char != '\n':
             self.advance()
 
     def number(self):
@@ -180,7 +179,7 @@ class Lexer:
             if self.current_char == '"' or self.current_char == "'":
                 return self.string(self.current_char)
 
-            # Caracteres de 1 digito de longitud
+            # Caracteres de 1 dígito de longitud
             if self.current_char == '+':
                 self.advance()
                 return self.new_token(TokenType.PLUS, '+')
@@ -209,7 +208,7 @@ class Lexer:
                 self.advance()
                 return self.new_token(TokenType.COMMA, ',')
 
-            # Caracteres de 1 o más digitos de longitud
+            # Caracteres de 1 o más dígitos de longitud
             if self.current_char == '=':
                 self.advance()  # Avanza el '='
                 if self.current_char == '=':
