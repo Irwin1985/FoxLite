@@ -139,22 +139,22 @@ class Parser:
     """
     def public_decl(self):
         self.eat(TokenType.PUBLIC)
-        var_token = self.identifier()
-        return ast.VariableDecl(token=var_token, scope='public')
+        ident = self.identifier()
+        return ast.VariableDecl(name=ident, scope='public')
     """
         local_decl = 'local' identifier
     """
     def local_decl(self):
         self.eat(TokenType.LOCAL)
-        var_token = self.identifier()
-        return ast.VariableDecl(token=var_token, scope='local')
+        ident = self.identifier()
+        return ast.VariableDecl(name=ident, scope='local')
     """
         private_decl = 'private' identifier
     """
     def private_decl(self):
         self.eat(TokenType.PRIVATE)
-        var_token = self.identifier()
-        return ast.VariableDecl(token=var_token, scope='private')
+        ident = self.identifier()
+        return ast.VariableDecl(name=ident, scope='private')
     """
         function_decl ::= 'function' identifier '(' ( params )? ')'
     """
@@ -212,7 +212,7 @@ class Parser:
         ident = self.identifier()
         self.eat(TokenType.ASSIGN)
         value = self.expression_decl()
-        return ast.Assignment(token=ident, value=value)
+        return ast.Assignment(name=ident, value=value)
     """
         return_decl ::= 'return' (expression_decl)?
     """
@@ -431,6 +431,10 @@ class Parser:
         return identifiers
 
     def identifier(self):
+        """
+        Genera un ast de tipo Identifier()
+        :return: ast.Identifier()
+        """
         name = self.cur_token.value
         self.eat(TokenType.IDENT)
         return ast.Identifier(value=name)

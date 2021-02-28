@@ -261,7 +261,7 @@ class Evaluator:
         # Evaluar declaraciónes de Variables
         elif type(ast_node) is ast.VariableDecl:
             #  Las variables por defecto se declaran en .F.
-            return env.set(ast_node.token.value, FALSE, ast_node.scope)
+            return env.set(ast_node.name.value, FALSE, ast_node.scope)
         # Evaluar asignaciones de Variables
         elif type(ast_node) is ast.Assignment:
             # Resolvemos su valor antes de guardarlo en la Tabla de Símbolos.
@@ -269,7 +269,7 @@ class Evaluator:
             if is_error(val_obj):
                 return val_obj
 
-            return env.set(ast_node.token.value, val_obj)
+            return env.set(ast_node.name.value, val_obj)
         # Evaluar identificadores
         elif type(ast_node) is ast.Identifier:
             return eval_identifier(ast_node, env)

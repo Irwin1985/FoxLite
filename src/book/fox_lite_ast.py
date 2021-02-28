@@ -50,16 +50,16 @@ class FunctionDecl(AST):
         self.body = body
 
 
-class DoWhile(AST):
-    def __init__(self, condition=None, block=None):
-        self.condition = condition
-        self.block = block
-
-
 class FunctionCall(AST):
     def __init__(self):
         self.name = None
         self.arguments = []
+
+
+class DoWhile(AST):
+    def __init__(self, condition=None, block=None):
+        self.condition = condition
+        self.block = block
 
 
 class IfStatement(AST):
@@ -83,14 +83,14 @@ class UnaryOp(AST):
 
 
 class VariableDecl(AST):
-    def __init__(self, token, scope):
-        self.token = token
+    def __init__(self, name, scope):
+        self.name = name
         self.scope = scope
 
 
 class Assignment(AST):
-    def __init__(self, token, value=None):
-        self.token = token
+    def __init__(self, name, value=None):
+        self.name = name
         self.value = value
 
 

@@ -255,9 +255,9 @@ class TestParser(unittest.TestCase):
 
     def test_variable_declaration(self):
         tests = [
-            ["public a", VariableDecl(token=Identifier(value="a"), scope='public')],
-            ["local b", VariableDecl(token=Identifier(value="b"), scope='local')],
-            ["private c", VariableDecl(token=Identifier(value="c"), scope='private')],
+            ["public a", VariableDecl(name=Identifier(value="a"), scope='public')],
+            ["local b", VariableDecl(name=Identifier(value="b"), scope='local')],
+            ["private c", VariableDecl(name=Identifier(value="c"), scope='private')],
         ]
         for tt in tests:
             source = tt[0]
@@ -271,8 +271,8 @@ class TestParser(unittest.TestCase):
 
             variable = program.statements[0]
 
-            self.assertEqual(expected.token.value, variable.token.value,
-                             f'expected.token.value is not {expected.token.value}. got={variable.token.value}')
+            self.assertEqual(expected.name.value, variable.name.value,
+                             f'expected.token.value is not {expected.name.value}. got={variable.name.value}')
 
             self.assertEqual(expected.scope, variable.scope,
                              f'expected.scope is not {expected.scope}. got={variable.scope}')
