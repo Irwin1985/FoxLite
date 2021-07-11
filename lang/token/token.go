@@ -11,7 +11,7 @@ const (
 
 	// Identifiers + literals
 	IDENT  // add, foobar, x, y, ...
-	INT    // 1234
+	NUMBER // 1234
 	STRING // "foobar"
 
 	// Operators
@@ -49,6 +49,8 @@ const (
 
 	// keywords
 	FUNCTION
+	FUNC
+	LPARAMETERS
 	ENDFUNC
 	LOCAL
 	PRIVATE
@@ -78,13 +80,13 @@ const (
 )
 
 // displayable tokens
-var tokenNames = []string{
+var TokenNames = []string{
 	"ILLEGAL",
 	"EOF",
 	"NEWLINE",
 
 	"INDENT", // add, foobar, x, y, ...
-	"INT",    // 1234
+	"NUMBER", // 1234
 	"STRING", // "foobar"
 
 	// Operators
@@ -122,6 +124,8 @@ var tokenNames = []string{
 
 	// keywords
 	"FUNCTION",
+	"FUNC",
+	"LPARAMETERS",
 	"ENDFUNC",
 	"LOCAL",
 	"PRIVATE",
@@ -152,20 +156,22 @@ var tokenNames = []string{
 
 // keywords
 var keywords = map[string]TokenType{
-	"function": FUNCTION,
-	"endfunc":  ENDFUNC,
-	"local":    LOCAL,
-	"private":  PRIVATE,
-	"public":   PUBLIC,
-	".t.":      TRUE,
-	".f.":      FALSE,
-	"null":     NULL,
-	"and":      AND,
-	"or":       OR,
-	"if":       IF,
-	"else":     ELSE,
-	"endif":    ENDIF,
-	"return":   RETURN,
+	"function":    FUNCTION,
+	"func":        FUNCTION,
+	"lparameters": LPARAMETERS,
+	"endfunc":     ENDFUNC,
+	"local":       LOCAL,
+	"private":     PRIVATE,
+	"public":      PUBLIC,
+	".t.":         TRUE,
+	".f.":         FALSE,
+	"null":        NULL,
+	"and":         AND,
+	"or":          OR,
+	"if":          IF,
+	"else":        ELSE,
+	"endif":       ENDIF,
+	"return":      RETURN,
 }
 
 // small tokens
@@ -202,33 +208,16 @@ var smallTokens = map[string]TokenType{
 	"]": RBRACKET,
 }
 
-// boolprecursor
-// '=', '==', '<', '<=', '>', '>=', 'and', 'or', '!', '!='
-var boolprecursor = map[TokenType]byte{
-	ASSIGN:  0,
-	EQ:      1,
-	LT:      2,
-	LEQ:     3,
-	GT:      4,
-	GEQ:     5,
-	AND:     6,
-	OR:      7,
-	BANG:    8,
-	NEQ:     9,
-	EOF:     10,
-	NEWLINE: 11,
-}
-
 // Token struct
 type Token struct {
 	Type   TokenType
-	Lexeme string
-	Line   int
+	Lexeme interface{}
+	Ln     int
 	Col    int
 }
 
-func (t *Token) ToString() string {
-	return fmt.Sprintf("<Ln %d, Col %d \t <%s, '%s'>", t.Line, t.Col, tokenNames[t.Type], t.Lexeme)
+func (t Token) ToString() string {
+	return fmt.Sprintf("<Ln %d,\tCol %d\t%s,\t'%v'>", t.Ln, t.Col, TokenNames[t.Type], t.Lexeme)
 }
 
 // Return the matching token keyword or IDENT
@@ -245,12 +234,4 @@ func Special(name string) (TokenType, bool) {
 		return tok, true
 	}
 	return EOF, false
-}
-
-// the given token is a boolean precursor?
-func BoolPrecursor(t TokenType) bool {
-	if _, ok := boolprecursor[t]; ok {
-		return true
-	}
-	return false
 }

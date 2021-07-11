@@ -4,7 +4,9 @@ import (
 	"FoxLite/lang/token"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
+	"unicode"
 )
 
 type Lexer struct {
@@ -25,8 +27,8 @@ func NewLexer(input string) *Lexer {
 }
 
 // create a token and keep track of last generated token
-func (l *Lexer) newToken(t token.TokenType, v string) token.Token {
-	tok := token.Token{Type: t, Lexeme: v, Line: l.ln, Col: l.col}
+func (l *Lexer) newToken(t token.TokenType, v interface{}) token.Token {
+	tok := token.Token{Type: t, Lexeme: v, Ln: l.ln, Col: l.col}
 	l.lt = t
 	return tok
 }
@@ -36,15 +38,11 @@ func isSpace(c rune) bool {
 }
 
 func isLetter(c rune) bool {
-	return rune('a') <= c && c <= rune('z') || rune('A') <= c && c <= rune('Z') || c == rune('_')
+	return unicode.IsLetter(c) || c == rune('_')
 }
 
 func isIdent(c rune) bool {
-	return isLetter(c) || isDigit(c)
-}
-
-func isDigit(c rune) bool {
-	return rune('0') <= c && c <= rune('9')
+	return isLetter(c) || unicode.IsNumber(c)
 }
 
 func (l *Lexer) consume() {
@@ -61,13 +59,32 @@ func (l *Lexer) ws() {
 	}
 }
 
-func (l *Lexer) num() token.Token {
-	var lex string
-	for !l.isAtEnd() && isDigit(l.c) {
+func (l *Lexer) justNum() string {
+	lex := ""
+	for !l.isAtEnd() && unicode.IsNumber(l.c) {
 		lex += string(l.c)
 		l.consume()
 	}
-	return l.newToken(token.INT, lex)
+	return lex
+}
+
+func (l *Lexer) num() token.Token {
+	lex := string(l.c)
+	l.consume()
+	lex += l.justNum()
+	if l.c == '.' && unicode.IsDigit(l.s.Peek()) {
+		lex += "."
+		l.consume()
+		lex += l.justNum()
+	}
+
+	v, err := strconv.ParseFloat(lex, 64)
+	if err != nil {
+		fmt.Printf("could not parse the following lexeme into number token: %v", lex)
+		os.Exit(1)
+	}
+
+	return l.newToken(token.NUMBER, float32(v))
 }
 
 func (l *Lexer) str() token.Token {
@@ -105,25 +122,26 @@ func (l *Lexer) special(t token.TokenType) token.Token {
 
 }
 
+func isBoolLetter(c rune) bool {
+	return c == 't' || c == 'T' || c == 'f' || c == 'F'
+}
+
 func (l *Lexer) dot() token.Token {
-	c := l.s.Peek()
-	if c == 't' || c == 'T' || c == 'f' || c == 'F' {
-		isFalse := c == 'f' || c == 'F'
+	// we need to recognize this pattern '.' 't|T|f|F' '.'
+	l.consume() // skip the first '.'
+	if isBoolLetter(l.c) && l.s.Peek() == '.' {
+		// defenitely is a boolean token
+		isFalse := l.c == 'f' || l.c == 'F'
+		l.consume() // skip 't' | 'T' | 'f' | 'F'
 		l.consume() // skip '.'
-		if l.s.Peek() == '.' {
-			l.consume() // skip 't' | 'T'
-			l.consume() // skip '.'
-			tok := token.TRUE
-			lex := ".T."
-			if isFalse {
-				tok = token.FALSE
-				lex = ".F."
-			}
-			return l.newToken(tok, lex)
+		tok := token.TRUE
+		lex := true
+		if isFalse {
+			tok = token.FALSE
+			lex = false
 		}
-		return l.newToken(token.DOT, ".")
+		return l.newToken(tok, lex)
 	}
-	l.consume() // skip '.'
 	return l.newToken(token.DOT, ".")
 }
 
@@ -147,7 +165,7 @@ func (l *Lexer) NextToken() token.Token {
 			l.ws()
 			continue
 		}
-		if isDigit(l.c) {
+		if unicode.IsNumber(l.c) {
 			return l.num()
 		}
 		if isLetter(l.c) {
