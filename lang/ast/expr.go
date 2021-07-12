@@ -6,6 +6,7 @@ type VisitorExpr interface {
 	VisitLiteralExpr(expr *LiteralExpr) interface{}
 	VisitUnaryExpr(expr *Unary) interface{}
 	VisitBinaryExpr(expr *Binary) interface{}
+	VisitCallExpr(expr *CallExpr) interface{}
 }
 
 type Expr interface {
@@ -37,4 +38,13 @@ type Binary struct {
 
 func (expr *Binary) Accept(v VisitorExpr) interface{} {
 	return v.VisitBinaryExpr(expr)
+}
+
+type CallExpr struct {
+	Function  Expr
+	Arguments []Expr
+}
+
+func (expr *CallExpr) Accept(v VisitorExpr) interface{} {
+	return v.VisitCallExpr(expr)
 }

@@ -94,3 +94,7 @@ func (a *AstPrinter) VisitIfStmt(stmt *IfStmt) interface{} {
 
 	return out.String()
 }
+
+func (a *AstPrinter) VisitCallExpr(expr *CallExpr) interface{} {
+	return nil
+}

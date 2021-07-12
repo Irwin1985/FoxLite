@@ -18,11 +18,10 @@ func main() {
 
 func testInterpreter() {
 	input := `
-		IF .T. THEN
-			RETURN "ES TRUE"
-		ELSE
-			RETURN "ES FALSE"
-		ENDIF
+		FUNC ADD(X, Y)			
+			RETURN X + Y
+		ENDFUNC
+		ADD(5, 10) + ADD(10, 5)
 	`
 	l := lexer.NewLexer(input)
 	p := parser.NewParser(l)
@@ -33,7 +32,9 @@ func testInterpreter() {
 	}
 	i := interpreter.NewInterpreter(program)
 	out := i.Interpret()
-	fmt.Printf("%v", out)
+	if out != nil {
+		fmt.Printf("%v", out)
+	}
 }
 
 func testParser() {

@@ -52,6 +52,8 @@ var mapPrecedence = map[token.TokenType]int{
 	token.MUL_EQ: FACTOR,
 	token.DIV:    FACTOR,
 	token.DIV_EQ: FACTOR,
+	// call
+	token.LPAREN: CALL,
 }
 
 // parsing functions type
@@ -114,6 +116,7 @@ func (p *Parser) regSemanticCode() {
 	p.regInfixFn(token.AND, p.parseBinaryExpr)
 	p.regInfixFn(token.OR, p.parseBinaryExpr)
 	p.regInfixFn(token.ASSIGN, p.parseBinaryExpr)
+	p.regInfixFn(token.LPAREN, p.parseCallExpr)
 }
 
 func (p *Parser) Parse() []ast.Stmt {
@@ -252,6 +255,27 @@ func (p *Parser) parseBinaryExpr(left ast.Expr) ast.Expr {
 	expr.Right = p.parseExpression(pre)
 
 	return expr
+}
+
+func (p *Parser) parseCallExpr(left ast.Expr) ast.Expr {
+	expr := &ast.CallExpr{Function: left}
+
+	p.advance()
+	if !p.match(token.RPAREN) {
+		expr.Arguments = p.parseExpressions()
+		p.expect(token.RPAREN, "expected ')' after arguments")
+	}
+
+	return expr
+}
+
+func (p *Parser) parseExpressions() []ast.Expr {
+	exprList := []ast.Expr{}
+	exprList = append(exprList, p.parseExpression(LOWEST))
+	for !p.isAtEnd() && p.match(token.COMMA) {
+		exprList = append(exprList, p.parseExpression(LOWEST))
+	}
+	return exprList
 }
 
 func (p *Parser) parseUnaryExpr() ast.Expr {
