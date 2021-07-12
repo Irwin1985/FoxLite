@@ -2,6 +2,7 @@ package main
 
 import (
 	"FoxLite/lang/ast"
+	"FoxLite/lang/interpreter"
 	"FoxLite/lang/lexer"
 	"FoxLite/lang/parser"
 	"FoxLite/lang/token"
@@ -11,13 +12,42 @@ import (
 func main() {
 	//testLexer()
 	//testStream()
-	testParser()
+	//testParser()
+	testInterpreter()
+}
+
+func testInterpreter() {
+	input := `
+		IF .T. THEN
+			RETURN "ES TRUE"
+		ELSE
+			RETURN "ES FALSE"
+		ENDIF
+	`
+	l := lexer.NewLexer(input)
+	p := parser.NewParser(l)
+	program := p.Parse()
+	if len(p.Errors()) > 0 {
+		printErrors(p.Errors())
+		return
+	}
+	i := interpreter.NewInterpreter(program)
+	out := i.Interpret()
+	fmt.Printf("%v", out)
 }
 
 func testParser() {
 	input := `
 		FUNC ADD(X, Y)
 			LOCAL A = 10
+			IF A >= 20 THEN
+				A = 20
+			ELSE
+				A = 30
+			ENDIF
+			IF A <= 20
+				A = 30
+			ENDIF
 			RETURN A
 		ENDFUNC
 	`

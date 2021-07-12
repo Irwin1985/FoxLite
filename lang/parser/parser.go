@@ -16,6 +16,7 @@ import (
 
 const (
 	LOWEST int = iota
+	ASSIGNMENT
 	LOGIC_OR
 	LOGIC_AND
 	EQUALITY   // '==' | '!='
@@ -31,6 +32,8 @@ var mapPrecedence = map[token.TokenType]int{
 	// logical arithmetic
 	token.OR:  LOGIC_OR,
 	token.AND: LOGIC_AND,
+	// assignment
+	token.ASSIGN: ASSIGNMENT,
 	// equality
 	token.EQ:  EQUALITY,
 	token.NEQ: EQUALITY,
@@ -110,13 +113,14 @@ func (p *Parser) regSemanticCode() {
 
 	p.regInfixFn(token.AND, p.parseBinaryExpr)
 	p.regInfixFn(token.OR, p.parseBinaryExpr)
+	p.regInfixFn(token.ASSIGN, p.parseBinaryExpr)
 }
 
 func (p *Parser) Parse() []ast.Stmt {
 	program := []ast.Stmt{}
 	for !p.isAtEnd() {
 		program = append(program, p.statement())
-		p.expect(token.NEWLINE, "expected NEWLINE after statement.")
+		p.match(token.NEWLINE)
 	}
 	return program
 }
@@ -128,6 +132,8 @@ func (p *Parser) statement() ast.Stmt {
 		return p.functionStmt()
 	} else if p.match(token.RETURN) {
 		return p.returnStmt()
+	} else if p.match(token.IF) {
+		return p.ifStatement()
 	} else {
 		return p.expressionStatement()
 	}
@@ -168,19 +174,30 @@ func (p *Parser) returnStmt() ast.Stmt {
 	return stmt
 }
 
-func (p *Parser) parseBlockStmt(t token.TokenType) *ast.BlockStmt {
+func (p *Parser) ifStatement() ast.Stmt {
+	stmt := &ast.IfStmt{}
+	stmt.Condition = p.parseExpression(LOWEST)
+	p.match(token.THEN)
+	stmt.Consequence = p.parseBlockStmt(token.ELSE, token.ENDIF)
+
+	if p.prevToken.Type == token.ELSE {
+		stmt.Alternative = p.parseBlockStmt(token.ENDIF)
+	}
+	return stmt
+}
+
+func (p *Parser) parseBlockStmt(t ...token.TokenType) *ast.BlockStmt {
 	block := &ast.BlockStmt{}
 	block.Statements = []ast.Stmt{}
 	p.expect(token.NEWLINE, "expected NEWLINE before block")
 
-	for !p.isAtEnd() && !p.curTokenIs(t) {
+	for !p.isAtEnd() && !p.curTokenIs(t...) {
 		block.Statements = append(block.Statements, p.statement())
-		p.expect(token.NEWLINE, "expected NEWLINE after statement.")
+		p.match(token.NEWLINE)
 	}
 	if p.isAtEnd() {
 		p.newError("unexpected End of File")
 	}
-	p.expect(t, fmt.Sprintf("%v expected.", token.TokenNames[t]))
 
 	return block
 }
@@ -274,8 +291,13 @@ func (p *Parser) expect(t token.TokenType, msg string) {
 	}
 }
 
-func (p *Parser) curTokenIs(t token.TokenType) bool {
-	return p.curToken.Type == t
+func (p *Parser) curTokenIs(tokens ...token.TokenType) bool {
+	for _, t := range tokens {
+		if p.match(t) {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *Parser) match(t token.TokenType) bool {

@@ -61,6 +61,8 @@ const (
 	AND
 	OR
 	IF
+	IIF
+	THEN
 	ELSE
 	ENDIF
 	DOCASE
@@ -136,6 +138,8 @@ var TokenNames = []string{
 	"AND",
 	"OR",
 	"IF",
+	"IIF",
+	"THEN",
 	"ELSE",
 	"ENDIF",
 	"DOCASE",
@@ -169,6 +173,8 @@ var keywords = map[string]TokenType{
 	"and":         AND,
 	"or":          OR,
 	"if":          IF,
+	"then":        THEN,
+	"iif":         IIF,
 	"else":        ELSE,
 	"endif":       ENDIF,
 	"return":      RETURN,

@@ -8,6 +8,7 @@ type VisitorStmt interface {
 	VisitVarStmt(stmt *VarStmt) interface{}
 	VisitFunctionStmt(stmt *FunctionStmt) interface{}
 	VisitReturnStmt(stmt *ReturnStmt) interface{}
+	VisitIfStmt(stmt *IfStmt) interface{}
 }
 
 type Stmt interface {
@@ -56,4 +57,14 @@ type VarStmt struct {
 
 func (stmt *VarStmt) Accept(v VisitorStmt) interface{} {
 	return v.VisitVarStmt(stmt)
+}
+
+type IfStmt struct {
+	Condition   Expr
+	Consequence *BlockStmt
+	Alternative *BlockStmt
+}
+
+func (stmt *IfStmt) Accept(v VisitorStmt) interface{} {
+	return v.VisitIfStmt(stmt)
 }

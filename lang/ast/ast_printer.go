@@ -81,3 +81,16 @@ func (a *AstPrinter) VisitFunctionStmt(stmt *FunctionStmt) interface{} {
 func (a *AstPrinter) VisitReturnStmt(stmt *ReturnStmt) interface{} {
 	return fmt.Sprintf("RETURN %v", a.evalExpr(stmt.Value))
 }
+
+func (a *AstPrinter) VisitIfStmt(stmt *IfStmt) interface{} {
+	var out bytes.Buffer
+	out.WriteString(fmt.Sprintf("IF (%v) THEN", a.evalExpr(stmt.Condition)))
+	out.WriteString(fmt.Sprintf("%v", a.evalStmt(stmt.Consequence)))
+
+	if stmt.Alternative != nil {
+		out.WriteString(fmt.Sprintf("%v", a.evalStmt(stmt.Alternative)))
+	}
+	out.WriteString("ENDIF")
+
+	return out.String()
+}
