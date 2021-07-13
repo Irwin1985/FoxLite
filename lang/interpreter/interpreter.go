@@ -13,9 +13,9 @@ type Interpreter struct {
 	program []ast.Stmt
 }
 
-func NewInterpreter(program []ast.Stmt) *Interpreter {
+func NewInterpreter(program []ast.Stmt, globalEnv *object.Environment) *Interpreter {
 	i := &Interpreter{
-		Env:     object.NewEnvironment(),
+		Env:     globalEnv,
 		program: program,
 	}
 	return i
@@ -220,6 +220,18 @@ func binaryNumber(left float32, ope token.TokenType, right float32) interface{} 
 			return newError("error: division by zero")
 		}
 		return left / right
+	case token.LT:
+		return left < right
+	case token.GT:
+		return left > right
+	case token.LEQ:
+		return left <= right
+	case token.GEQ:
+		return left >= right
+	case token.EQ:
+		return left == right
+	case token.NEQ:
+		return left != right
 	default:
 		return newError("data type mismatch")
 	}
