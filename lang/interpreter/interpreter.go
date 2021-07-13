@@ -9,14 +9,16 @@ import (
 )
 
 type Interpreter struct {
-	Env     *object.Environment
-	program []ast.Stmt
+	env       *object.Environment
+	globalEnv *object.Environment
+	program   []ast.Stmt
 }
 
-func NewInterpreter(program []ast.Stmt, globalEnv *object.Environment) *Interpreter {
+func NewInterpreter(program []ast.Stmt, env *object.Environment) *Interpreter {
 	i := &Interpreter{
-		Env:     globalEnv,
-		program: program,
+		env:       env,
+		globalEnv: env,
+		program:   program,
 	}
 	return i
 }
@@ -48,7 +50,7 @@ func (i *Interpreter) VisitExprStmt(stmt *ast.ExprStmt) interface{} {
 
 func (i *Interpreter) VisitLiteralExpr(expr *ast.LiteralExpr) interface{} {
 	if expr.Value.Type == token.IDENT {
-		v, err := i.Env.Get(expr.Value.Lexeme.(string))
+		v, err := i.env.Get(expr.Value.Lexeme.(string))
 		if err != nil {
 			return newError(fmt.Sprintf("%v", err))
 		}
@@ -107,14 +109,27 @@ func (i *Interpreter) VisitBinaryExpr(expr *ast.Binary) interface{} {
 
 func (i *Interpreter) VisitVarStmt(stmt *ast.VarStmt) interface{} {
 	name := stmt.Name.Value.Lexeme.(string)
-	i.Env.Set(name, i.evalExpr(stmt.Value))
+	value := i.evalExpr(stmt.Value)
+	if isError(value) {
+		return value
+	}
+	// PUBLIC variables goes directly in globalEnv
+	if stmt.Token.Type == token.PUBLIC {
+		i.globalEnv.Set(name, value)
+	}
+	i.env.Set(name, i.evalExpr(stmt.Value))
 	return nil
 }
 
 func (i *Interpreter) VisitInlineVarStmt(stmt *ast.InlineVarStmt) interface{} {
+	curEnv := i.env
+	// PUBLIC variables goes directly in globalEnv
+	if stmt.Scope == token.PUBLIC {
+		curEnv = i.globalEnv
+	}
 	for _, value := range stmt.Variables {
 		v := value.(*ast.VarStmt)
-		i.Env.Set(v.Name.Value.Lexeme.(string), i.evalExpr(v.Value))
+		curEnv.Set(v.Name.Value.Lexeme.(string), i.evalExpr(v.Value))
 	}
 	return nil
 }
@@ -135,9 +150,9 @@ func (i *Interpreter) VisitFunctionStmt(stmt *ast.FunctionStmt) interface{} {
 	funObj.Name = stmt.Name.Lexeme.(string)
 	funObj.Parameters = stmt.Parameters
 	funObj.Body = stmt.Body
-	funObj.Env = i.Env
+	funObj.Env = i.env
 
-	i.Env.Set(funObj.Name, funObj)
+	i.env.Set(funObj.Name, funObj)
 
 	return nil
 }
@@ -151,7 +166,7 @@ func (i *Interpreter) VisitCallExpr(expr *ast.CallExpr) interface{} {
 		return newError("Syntax error: left hand side must be a function definition")
 	}
 	if funObj, ok := left.(*object.Function); ok {
-		args := i.evalExpressions(expr.Arguments)
+		args := i.evalArguments(expr.Arguments)
 		if len(args) == 1 && isError(args[0]) {
 			return args[0]
 		}
@@ -161,7 +176,7 @@ func (i *Interpreter) VisitCallExpr(expr *ast.CallExpr) interface{} {
 	return nil
 }
 
-func (i *Interpreter) evalExpressions(args []ast.Expr) []interface{} {
+func (i *Interpreter) evalArguments(args []ast.Expr) []interface{} {
 	exps := []interface{}{}
 
 	var result interface{}
@@ -205,12 +220,10 @@ func (i *Interpreter) VisitIfStmt(stmt *ast.IfStmt) interface{} {
 
 // HELPER FUNCTIONS
 func (i *Interpreter) evalAssignment(expr *ast.Binary) interface{} {
-	leftVal := i.evalExpr(expr.Left)
-	if isError(leftVal) {
-		return leftVal
-	}
-	if name, ok := leftVal.(string); ok {
-		return i.Env.Set(name, i.evalExpr(expr.Right))
+	if lit, ok := expr.Left.(*ast.LiteralExpr); ok {
+		if name, ok := lit.Value.Lexeme.(string); ok {
+			return i.env.Set(name, i.evalExpr(expr.Right))
+		}
 	}
 	return newError("syntax error: left hand side must be an identifier")
 }
@@ -257,13 +270,24 @@ func binaryString(left string, ope token.TokenType, right string) interface{} {
 }
 
 func (i *Interpreter) applyFunction(fn *object.Function, args []interface{}) interface{} {
+	// do some parameters validation
+	fnParNum := len(fn.Parameters)
+	argNum := len(args)
+	// 1. function does not implement parameters and got some.
+	if fnParNum == 0 && argNum > 0 {
+		return newError("No PARAMETER statement is found")
+	}
+	// 2. function expect more parameters that expected ones.
+	if argNum > fnParNum {
+		return newError("Must specify additional parameters.")
+	}
 	extendedEnv := extendFunctionEnv(fn, args)
 
-	oldEnv := i.Env
-	i.Env = extendedEnv
+	oldEnv := i.env
+	i.env = extendedEnv
 
 	evaluated := i.evalStmt(fn.Body)
-	i.Env = oldEnv
+	i.env = oldEnv
 	return unwrapReturnValue(evaluated)
 }
 
@@ -271,7 +295,12 @@ func extendFunctionEnv(fn *object.Function, args []interface{}) *object.Environm
 	env := object.NewEnclosedEnvironment(fn.Env)
 
 	for paramIdx, param := range fn.Parameters {
-		env.Set(param.Value.Lexeme.(string), args[paramIdx])
+		if paramIdx < len(args) {
+			env.Set(param.Value.Lexeme.(string), args[paramIdx])
+		} else {
+			// add false as default
+			env.Set(param.Value.Lexeme.(string), false)
+		}
 	}
 
 	return env
@@ -311,7 +340,7 @@ func isError(i interface{}) bool {
 	}
 
 	switch i.(type) {
-	case object.Error:
+	case *object.Error:
 		return true
 	default:
 		return false

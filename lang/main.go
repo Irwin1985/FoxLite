@@ -7,12 +7,13 @@ import (
 func main() {
 	//run F:\Desarrollo\GitHub\GOPATH\src\FoxLite\lang\samples\fibonacci.prg
 	input := `
-		LOCAL(
-			A = 10,
-			B = 20,
-			C = A + B
-		)
-		RETURN C
+		FUNCTION FIRST_NAME(FNAME)
+			FUNCTION LAST_NAME(LNAME)
+				RETURN FNAME + ", " + LNAME
+			ENDFUNC
+			RETURN LAST_NAME
+		ENDFUNC		
+		RETURN LAST_NAME("RODRIGUEZ")
 	`
 	mode := "interpreter"
 	repl.Start(mode, input)

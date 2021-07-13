@@ -91,6 +91,9 @@ func run(input string) error {
 	if len(errors) > 0 {
 		printErrors(errors)
 	}
+	if program == nil {
+		return fmt.Errorf("Parsing error where found.")
+	}
 	i := interpreter.NewInterpreter(program, globalEnv)
 	output := i.Interpret()
 	elapsed := time.Since(start)

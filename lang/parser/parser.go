@@ -122,8 +122,15 @@ func (p *Parser) regSemanticCode() {
 func (p *Parser) Parse() []ast.Stmt {
 	program := []ast.Stmt{}
 	for !p.isAtEnd() {
-		program = append(program, p.statement())
+		s := p.statement()
+		if s == nil {
+			return nil
+		}
+		program = append(program, s)
 		p.match(token.NEWLINE)
+	}
+	if !p.curTokenIs(token.EOF) {
+		p.newError("expected EOF.")
 	}
 	return program
 }
@@ -172,14 +179,22 @@ func (p *Parser) functionStmt() ast.Stmt {
 
 func (p *Parser) returnStmt() ast.Stmt {
 	stmt := &ast.ReturnStmt{}
-	stmt.Value = p.parseExpression(LOWEST)
+	exp := p.parseExpression(LOWEST)
+	if exp == nil {
+		return nil
+	}
+	stmt.Value = exp
 
 	return stmt
 }
 
 func (p *Parser) ifStatement() ast.Stmt {
 	stmt := &ast.IfStmt{}
-	stmt.Condition = p.parseExpression(LOWEST)
+	exp := p.parseExpression(LOWEST)
+	if exp == nil {
+		return nil
+	}
+	stmt.Condition = exp
 	p.match(token.THEN)
 	stmt.Consequence = p.parseBlockStmt(token.ELSE, token.ENDIF)
 
@@ -194,8 +209,12 @@ func (p *Parser) parseBlockStmt(t ...token.TokenType) *ast.BlockStmt {
 	block.Statements = []ast.Stmt{}
 	p.expect(token.NEWLINE, "expected NEWLINE before block")
 
-	for !p.isAtEnd() && !p.curTokenIs(t...) {
-		block.Statements = append(block.Statements, p.statement())
+	for !p.isAtEnd() && !p.match(t...) {
+		s := p.statement()
+		if s == nil {
+			return nil
+		}
+		block.Statements = append(block.Statements, s)
 		p.match(token.NEWLINE)
 	}
 	if p.isAtEnd() {
@@ -214,7 +233,9 @@ func (p *Parser) varStatement() ast.Stmt {
 		name := &ast.LiteralExpr{Value: p.prevToken}
 		p.expect(token.ASSIGN, "expected '=' before expression.")
 		value := p.parseExpression(LOWEST)
-
+		if value == nil {
+			return nil
+		}
 		if p.curTokenIs(token.COMMA) {
 			return p.parseInlineVarStmt(tok, name, value)
 		} else {
@@ -244,6 +265,9 @@ func (p *Parser) parseInlineVarStmt(tok token.Token, name *ast.LiteralExpr, valu
 		name = &ast.LiteralExpr{Value: p.prevToken}
 		p.expect(token.ASSIGN, "expected '=' before expression.")
 		value := p.parseExpression(LOWEST)
+		if value == nil {
+			return nil
+		}
 
 		item = &ast.VarStmt{Name: name, Value: value}
 		stmt.Variables = append(stmt.Variables, item)
@@ -269,6 +293,9 @@ func (p *Parser) parseGroupedVarStmt() *ast.InlineVarStmt {
 	name := &ast.LiteralExpr{Value: p.prevToken}
 	p.expect(token.ASSIGN, "expected '=' before expression.")
 	value := p.parseExpression(LOWEST)
+	if value == nil {
+		return nil
+	}
 
 	item := &ast.VarStmt{Name: name, Value: value}
 	stmt.Variables = append(stmt.Variables, item)
@@ -281,6 +308,9 @@ func (p *Parser) parseGroupedVarStmt() *ast.InlineVarStmt {
 		name = &ast.LiteralExpr{Value: p.prevToken}
 		p.expect(token.ASSIGN, "expected '=' before expression.")
 		value = p.parseExpression(LOWEST)
+		if value == nil {
+			return nil
+		}
 
 		item = &ast.VarStmt{Name: name, Value: value}
 		stmt.Variables = append(stmt.Variables, item)
@@ -294,7 +324,11 @@ func (p *Parser) parseGroupedVarStmt() *ast.InlineVarStmt {
 
 func (p *Parser) expressionStatement() ast.Stmt {
 	stmt := &ast.ExprStmt{}
-	stmt.Expression = p.parseExpression(LOWEST)
+	exp := p.parseExpression(LOWEST)
+	if exp == nil {
+		return nil
+	}
+	stmt.Expression = exp
 	return stmt
 }
 
@@ -328,7 +362,11 @@ func (p *Parser) parseBinaryExpr(left ast.Expr) ast.Expr {
 
 	pre := p.curPrecedence()
 	p.advance()
-	expr.Right = p.parseExpression(pre)
+	exp := p.parseExpression(pre)
+	if expr == nil {
+		return nil
+	}
+	expr.Right = exp
 
 	return expr
 }
@@ -347,9 +385,17 @@ func (p *Parser) parseCallExpr(left ast.Expr) ast.Expr {
 
 func (p *Parser) parseExpressions() []ast.Expr {
 	exprList := []ast.Expr{}
-	exprList = append(exprList, p.parseExpression(LOWEST))
+	exp := p.parseExpression(LOWEST)
+	if exp == nil {
+		return nil
+	}
+	exprList = append(exprList, exp)
 	for !p.isAtEnd() && p.match(token.COMMA) {
-		exprList = append(exprList, p.parseExpression(LOWEST))
+		exp := p.parseExpression(LOWEST)
+		if exp == nil {
+			return nil
+		}
+		exprList = append(exprList, exp)
 	}
 	return exprList
 }
@@ -357,8 +403,11 @@ func (p *Parser) parseExpressions() []ast.Expr {
 func (p *Parser) parseUnaryExpr() ast.Expr {
 	expr := &ast.Unary{Operator: p.curToken}
 	p.advance()
-
-	expr.Right = p.parseExpression(UNARY)
+	exp := p.parseExpression(UNARY)
+	if exp == nil {
+		return nil
+	}
+	expr.Right = exp
 
 	return expr
 }
@@ -366,6 +415,9 @@ func (p *Parser) parseUnaryExpr() ast.Expr {
 func (p *Parser) parseGroupedExpr() ast.Expr {
 	p.advance()
 	exp := p.parseExpression(LOWEST)
+	if exp == nil {
+		return nil
+	}
 	p.expect(token.RPAREN, "expected ')' after expression.")
 
 	return exp
@@ -400,11 +452,13 @@ func (p *Parser) curTokenIs(tokens ...token.TokenType) bool {
 	return false
 }
 
-func (p *Parser) match(t token.TokenType) bool {
-	if p.curToken.Type == t {
-		p.prevToken = p.curToken
-		p.advance()
-		return true
+func (p *Parser) match(tokens ...token.TokenType) bool {
+	for _, t := range tokens {
+		if p.curToken.Type == t {
+			p.prevToken = p.curToken
+			p.advance()
+			return true
+		}
 	}
 	return false
 }

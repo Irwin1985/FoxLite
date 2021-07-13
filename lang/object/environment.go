@@ -32,5 +32,5 @@ func (e *Environment) Get(name string) (interface{}, error) {
 	if e.outer != nil {
 		return e.outer.Get(name)
 	}
-	return nil, fmt.Errorf("variable not found %v", name)
+	return nil, fmt.Errorf("variable not found [%v]", name)
 }
