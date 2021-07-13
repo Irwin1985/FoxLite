@@ -9,6 +9,7 @@ type VisitorStmt interface {
 	VisitFunctionStmt(stmt *FunctionStmt) interface{}
 	VisitReturnStmt(stmt *ReturnStmt) interface{}
 	VisitIfStmt(stmt *IfStmt) interface{}
+	VisitInlineVarStmt(stmt *InlineVarStmt) interface{}
 }
 
 type Stmt interface {
@@ -57,6 +58,15 @@ type VarStmt struct {
 
 func (stmt *VarStmt) Accept(v VisitorStmt) interface{} {
 	return v.VisitVarStmt(stmt)
+}
+
+type InlineVarStmt struct {
+	Scope     token.TokenType
+	Variables []Stmt
+}
+
+func (stmt *InlineVarStmt) Accept(v VisitorStmt) interface{} {
+	return v.VisitInlineVarStmt(stmt)
 }
 
 type IfStmt struct {

@@ -206,12 +206,88 @@ func (p *Parser) parseBlockStmt(t ...token.TokenType) *ast.BlockStmt {
 }
 
 func (p *Parser) varStatement() ast.Stmt {
-	stmt := &ast.VarStmt{Token: p.prevToken}
+	tok := p.prevToken
+	if p.match(token.LPAREN) {
+		return p.parseGroupedVarStmt()
+	} else {
+		p.expect(token.IDENT, "expected variable name.")
+		name := &ast.LiteralExpr{Value: p.prevToken}
+		p.expect(token.ASSIGN, "expected '=' before expression.")
+		value := p.parseExpression(LOWEST)
 
+		if p.curTokenIs(token.COMMA) {
+			return p.parseInlineVarStmt(tok, name, value)
+		} else {
+			stmt := &ast.VarStmt{
+				Token: tok,
+				Name:  name,
+				Value: value,
+			}
+			return stmt
+		}
+	}
+}
+
+// inlineVarStmt ::= ('LOCAL'|'PRIVATE'|'PUBLIC') identifier '=' varStmt (',' varStmt)*
+func (p *Parser) parseInlineVarStmt(tok token.Token, name *ast.LiteralExpr, value ast.Expr) *ast.InlineVarStmt {
+	stmt := &ast.InlineVarStmt{}
+	stmt.Scope = tok.Type
+	stmt.Variables = []ast.Stmt{}
+
+	// add previous variable
+	item := &ast.VarStmt{Name: name, Value: value}
+	stmt.Variables = append(stmt.Variables, item)
+
+	for !p.isAtEnd() && p.match(token.COMMA) {
+		p.expect(token.IDENT, "expected variable name.")
+
+		name = &ast.LiteralExpr{Value: p.prevToken}
+		p.expect(token.ASSIGN, "expected '=' before expression.")
+		value := p.parseExpression(LOWEST)
+
+		item = &ast.VarStmt{Name: name, Value: value}
+		stmt.Variables = append(stmt.Variables, item)
+	}
+	return stmt
+}
+
+// groupVarStmt ::= ('LOCAL'|'PRIVATE'|'PUBLIC') '(' (varStmt ',')* ')'
+func (p *Parser) parseGroupedVarStmt() *ast.InlineVarStmt {
+
+	stmt := &ast.InlineVarStmt{}
+	stmt.Scope = p.prevToken.Type
+	stmt.Variables = []ast.Stmt{}
+
+	if p.match(token.RPAREN) {
+		p.newError("expected variable declaration.")
+		return nil
+	}
+
+	p.match(token.NEWLINE) // in case of a NEW_LINE
 	p.expect(token.IDENT, "expected variable name.")
-	stmt.Name = &ast.LiteralExpr{Value: p.prevToken}
+
+	name := &ast.LiteralExpr{Value: p.prevToken}
 	p.expect(token.ASSIGN, "expected '=' before expression.")
-	stmt.Value = p.parseExpression(LOWEST)
+	value := p.parseExpression(LOWEST)
+
+	item := &ast.VarStmt{Name: name, Value: value}
+	stmt.Variables = append(stmt.Variables, item)
+
+	for !p.isAtEnd() && p.match(token.COMMA) {
+
+		p.match(token.NEWLINE) // in case of a NEW_LINE
+		p.expect(token.IDENT, "expected variable name.")
+
+		name = &ast.LiteralExpr{Value: p.prevToken}
+		p.expect(token.ASSIGN, "expected '=' before expression.")
+		value = p.parseExpression(LOWEST)
+
+		item = &ast.VarStmt{Name: name, Value: value}
+		stmt.Variables = append(stmt.Variables, item)
+	}
+
+	p.match(token.NEWLINE) // in case of a NEW_LINE
+	p.expect(token.RPAREN, "expected ')' after expression.")
 
 	return stmt
 }
@@ -317,7 +393,7 @@ func (p *Parser) expect(t token.TokenType, msg string) {
 
 func (p *Parser) curTokenIs(tokens ...token.TokenType) bool {
 	for _, t := range tokens {
-		if p.match(t) {
+		if p.curToken.Type == t {
 			return true
 		}
 	}

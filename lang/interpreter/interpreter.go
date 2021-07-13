@@ -28,7 +28,7 @@ func (i *Interpreter) Interpret() interface{} {
 		if isError(result) {
 			return result
 		} else if typeOf(result) == 'r' {
-			return result.(object.Return).Value
+			return result.(*object.Return).Value
 		}
 	}
 	return result
@@ -108,6 +108,14 @@ func (i *Interpreter) VisitBinaryExpr(expr *ast.Binary) interface{} {
 func (i *Interpreter) VisitVarStmt(stmt *ast.VarStmt) interface{} {
 	name := stmt.Name.Value.Lexeme.(string)
 	i.Env.Set(name, i.evalExpr(stmt.Value))
+	return nil
+}
+
+func (i *Interpreter) VisitInlineVarStmt(stmt *ast.InlineVarStmt) interface{} {
+	for _, value := range stmt.Variables {
+		v := value.(*ast.VarStmt)
+		i.Env.Set(v.Name.Value.Lexeme.(string), i.evalExpr(v.Value))
+	}
 	return nil
 }
 

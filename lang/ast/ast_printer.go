@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"FoxLite/lang/token"
 	"bytes"
 	"fmt"
 	"strings"
@@ -51,6 +52,21 @@ func (a *AstPrinter) VisitBinaryExpr(expr *Binary) interface{} {
 
 func (a *AstPrinter) VisitVarStmt(stmt *VarStmt) interface{} {
 	return fmt.Sprintf("%v %v = %v", stmt.Token.Lexeme, a.evalExpr(stmt.Name), a.evalExpr(stmt.Value))
+}
+
+func (a *AstPrinter) VisitInlineVarStmt(stmt *InlineVarStmt) interface{} {
+	var out bytes.Buffer
+
+	out.WriteString(token.TokenNames[stmt.Scope])
+	out.WriteString(" ")
+	varList := []string{}
+	for _, value := range stmt.Variables {
+		v := value.(*VarStmt)
+		varList = append(varList, fmt.Sprintf("%v = %v", v.Name.Value.Lexeme.(string), a.evalExpr(v.Value)))
+	}
+	out.WriteString(strings.Join(varList, ", "))
+
+	return out.String()
 }
 
 func (a *AstPrinter) VisitBlockStmt(stmt *BlockStmt) interface{} {
