@@ -217,9 +217,6 @@ func (p *Parser) parseBlockStmt(t ...token.TokenType) *ast.BlockStmt {
 		block.Statements = append(block.Statements, s)
 		p.match(token.NEWLINE)
 	}
-	if p.isAtEnd() {
-		p.newError("unexpected End of File")
-	}
 
 	return block
 }

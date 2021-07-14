@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -34,6 +36,8 @@ const ERROR = `
 `
 
 const VERSION = "1.0"
+const DEBUG_MODE = true
+const DEBUG_PATH = "F:\\Desarrollo\\GitHub\\GOPATH\\src\\FoxLite\\lang"
 
 var globalEnv = object.NewEnvironment()
 
@@ -58,7 +62,7 @@ func repl() {
 		if !scanned {
 			break
 		}
-		input := scanner.Text()
+		input := strings.ToLower(scanner.Text())
 		if len(input) < 0 {
 			continue
 		}
@@ -70,14 +74,40 @@ func repl() {
 }
 
 func evalInput(input string) {
-	if input[0:3] == "run" {
-		filePath := strings.TrimSpace(input[3:])
-		err := runFile(filePath)
-		if err != nil {
-			fmt.Printf("%s\n%v\n", ERROR, err)
-		}
-	} else {
+	if len(input) < 4 {
 		run(input)
+	} else {
+		if input[0:4] == "run " {
+			samplePath := getSamplePath()
+			filePath := strings.ToLower(samplePath + strings.TrimSpace(input[3:]))
+			if filePath[len(filePath)-4:] != ".prg" {
+				filePath += ".prg"
+			}
+			err := runFile(filePath)
+			if err != nil {
+				fmt.Printf("%s\n%v\n", ERROR, err)
+			}
+		} else if input[0:5] == "edit " {
+			samplePath := getSamplePath()
+			filePath := strings.ToLower(samplePath + strings.TrimSpace(input[4:]))
+			if filePath[len(filePath)-4:] != ".prg" {
+				filePath += ".prg"
+			}
+			if _, err := os.Stat(filePath); os.IsNotExist(err) {
+				f, err := os.Create(filePath)
+				if err != nil {
+					panic(err)
+				}
+				f.Close()
+			}
+			cmd := exec.Command("notepad.exe", filePath)
+			err := cmd.Run()
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			run(input)
+		}
 	}
 }
 
@@ -92,7 +122,7 @@ func run(input string) error {
 		printErrors(errors)
 	}
 	if program == nil {
-		return fmt.Errorf("Parsing error where found.")
+		return fmt.Errorf("parsing error where found")
 	}
 	i := interpreter.NewInterpreter(program, globalEnv)
 	output := i.Interpret()
@@ -162,4 +192,17 @@ func printErrors(errors []string) {
 	for _, msg := range errors {
 		fmt.Printf("%s\n", msg)
 	}
+}
+
+// get the sample/ directory
+func getSamplePath() string {
+	var dir = DEBUG_PATH
+	if !DEBUG_MODE {
+		path, err := filepath.Abs(filepath.Dir(os.Args[0]))
+		if err != nil {
+			panic(err)
+		}
+		dir = path
+	}
+	return fmt.Sprintf("%s\\samples\\", dir)
 }

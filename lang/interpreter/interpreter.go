@@ -88,6 +88,14 @@ func (i *Interpreter) VisitBinaryExpr(expr *ast.Binary) interface{} {
 		return i.evalAssignment(expr)
 	}
 
+	if ope == token.AND || ope == token.OR {
+		return i.evalLogicalExpr(expr)
+	}
+
+	if ope == token.PLUS_EQ || ope == token.MINUS_EQ || ope == token.MUL_EQ || ope == token.DIV_EQ {
+		return i.evalShortAssignment(expr)
+	}
+
 	left := i.evalExpr(expr.Left)
 	if isError(left) {
 		return left
@@ -115,9 +123,11 @@ func (i *Interpreter) VisitVarStmt(stmt *ast.VarStmt) interface{} {
 	}
 	// PUBLIC variables goes directly in globalEnv
 	if stmt.Token.Type == token.PUBLIC {
-		i.globalEnv.Set(name, value)
+		i.globalEnv.Set(name, value, stmt.Token.Type)
+		return nil
 	}
-	i.env.Set(name, i.evalExpr(stmt.Value))
+
+	i.env.Set(name, value, stmt.Token.Type)
 	return nil
 }
 
@@ -128,8 +138,12 @@ func (i *Interpreter) VisitInlineVarStmt(stmt *ast.InlineVarStmt) interface{} {
 		curEnv = i.globalEnv
 	}
 	for _, value := range stmt.Variables {
-		v := value.(*ast.VarStmt)
-		curEnv.Set(v.Name.Value.Lexeme.(string), i.evalExpr(v.Value))
+		node := value.(*ast.VarStmt)
+		value := i.evalExpr(node.Value)
+		if isError(value) {
+			return value
+		}
+		curEnv.Set(node.Name.Value.Lexeme.(string), value, stmt.Scope)
 	}
 	return nil
 }
@@ -151,8 +165,12 @@ func (i *Interpreter) VisitFunctionStmt(stmt *ast.FunctionStmt) interface{} {
 	funObj.Parameters = stmt.Parameters
 	funObj.Body = stmt.Body
 	funObj.Env = i.env
-
-	i.env.Set(funObj.Name, funObj)
+	name := funObj.Name
+	_, err := i.env.Get(name)
+	if err == nil {
+		return newError(fmt.Sprintf("invalid function name: '%s'", name))
+	}
+	i.env.Set(name, funObj, token.PRIVATE)
 
 	return nil
 }
@@ -222,10 +240,111 @@ func (i *Interpreter) VisitIfStmt(stmt *ast.IfStmt) interface{} {
 func (i *Interpreter) evalAssignment(expr *ast.Binary) interface{} {
 	if lit, ok := expr.Left.(*ast.LiteralExpr); ok {
 		if name, ok := lit.Value.Lexeme.(string); ok {
-			return i.env.Set(name, i.evalExpr(expr.Right))
+			result := i.evalExpr(expr.Right)
+			i.env.Assign(name, result, token.PRIVATE)
+			return nil
 		}
 	}
 	return newError("syntax error: left hand side must be an identifier")
+}
+
+func (i *Interpreter) evalLogicalExpr(expr *ast.Binary) interface{} {
+	left := i.evalExpr(expr.Left)
+	if isError(left) {
+		return left
+	}
+	if typeOf(left) != 'b' {
+		return newError("function argument value, type or count is invalid.")
+	}
+	leftVal := left.(bool)
+	ope := expr.Operator.Type
+
+	if ope == token.AND && !leftVal {
+		return i.evalRightExpr(expr.Right)
+	}
+	if ope == token.OR && !leftVal {
+		return i.evalRightExpr(expr.Right)
+	}
+	return true
+}
+
+func (i *Interpreter) evalRightExpr(expr ast.Expr) interface{} {
+	right := i.evalExpr(expr)
+	if isError(right) {
+		return right
+	}
+	if typeOf(right) != 'b' {
+		return newError("function argument value, type or count is invalid.")
+	}
+	return right.(bool)
+}
+
+func (i *Interpreter) evalShortAssignment(expr *ast.Binary) interface{} {
+	if left, ok := expr.Left.(*ast.LiteralExpr); ok {
+		name := left.Value.Lexeme.(string)
+		refEnv := i.env.GetEnv(name)
+		if refEnv == nil {
+			return newError(fmt.Sprintf("Variable '%v' is not found.", name))
+		}
+		scope := refEnv.Store[name].(*object.Scope)
+		leftValue := scope.Value
+
+		if typeOf(leftValue) == 'n' || typeOf(leftValue) == 's' {
+			right := i.evalExpr(expr.Right)
+			if isError(right) {
+				return right
+			}
+			ope := expr.Operator.Type
+			switch right.(type) {
+			case string:
+				if typeOf(right) != 's' {
+					return newError("Operator/operand type mismatch.")
+				}
+				switch ope {
+				case token.PLUS_EQ:
+					res := leftValue.(string) + right.(string)
+					scope.Value = res
+					refEnv.Store[name] = scope
+				case token.MINUS_EQ:
+					res := strings.TrimRight(leftValue.(string), " ") + right.(string)
+					scope.Value = res
+					refEnv.Store[name] = scope
+				default:
+					return newError("function argument value, type or count is invalid.")
+				}
+			case float32:
+				if typeOf(right) != 'n' {
+					return newError("Operator/operand type mismatch.")
+				}
+				switch ope {
+				case token.PLUS_EQ:
+					res := leftValue.(float32) + right.(float32)
+					scope.Value = res
+					refEnv.Store[name] = scope
+				case token.MINUS_EQ:
+					res := leftValue.(float32) - right.(float32)
+					scope.Value = res
+					refEnv.Store[name] = scope
+				case token.MUL_EQ:
+					res := leftValue.(float32) * right.(float32)
+					scope.Value = res
+					refEnv.Store[name] = scope
+				case token.DIV_EQ:
+					rightVal := scope.Value.(float32)
+					if rightVal == 0 {
+						return newError("division by zero.")
+					}
+					res := leftValue.(float32) / right.(float32)
+					scope.Value = res
+					refEnv.Store[name] = scope
+				default:
+					return newError("function argument value, type or count is invalid.")
+				}
+			}
+			return nil
+		}
+	}
+	return newError("function argument value, type or count is invalid.")
 }
 
 func binaryNumber(left float32, ope token.TokenType, right float32) interface{} {
@@ -296,10 +415,10 @@ func extendFunctionEnv(fn *object.Function, args []interface{}) *object.Environm
 
 	for paramIdx, param := range fn.Parameters {
 		if paramIdx < len(args) {
-			env.Set(param.Value.Lexeme.(string), args[paramIdx])
+			env.Set(param.Value.Lexeme.(string), args[paramIdx], token.PRIVATE)
 		} else {
 			// add false as default
-			env.Set(param.Value.Lexeme.(string), false)
+			env.Set(param.Value.Lexeme.(string), false, token.PRIVATE)
 		}
 	}
 
