@@ -10,6 +10,7 @@ type VisitorStmt interface {
 	VisitReturnStmt(stmt *ReturnStmt) interface{}
 	VisitIfStmt(stmt *IfStmt) interface{}
 	VisitInlineVarStmt(stmt *InlineVarStmt) interface{}
+	VisitDoCaseStmt(stmt *DoCaseStmt) interface{}
 }
 
 type Stmt interface {
@@ -77,4 +78,13 @@ type IfStmt struct {
 
 func (stmt *IfStmt) Accept(v VisitorStmt) interface{} {
 	return v.VisitIfStmt(stmt)
+}
+
+type DoCaseStmt struct {
+	Branches  []*IfStmt
+	Otherwise *BlockStmt
+}
+
+func (stmt *DoCaseStmt) Accept(v VisitorStmt) interface{} {
+	return v.VisitDoCaseStmt(stmt)
 }

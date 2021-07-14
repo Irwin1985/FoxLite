@@ -65,7 +65,7 @@ const (
 	THEN
 	ELSE
 	ENDIF
-	DOCASE
+	DO
 	CASE
 	OTHERWISE
 	ENDCASE
@@ -142,7 +142,7 @@ var TokenNames = []string{
 	"THEN",
 	"ELSE",
 	"ENDIF",
-	"DOCASE",
+	"DO",
 	"CASE",
 	"OTHERWISE",
 	"ENDCASE",
@@ -164,6 +164,10 @@ var keywords = map[string]TokenType{
 	"func":        FUNCTION,
 	"lparameters": LPARAMETERS,
 	"endfunc":     ENDFUNC,
+	"do":          DO,
+	"case":        CASE,
+	"otherwise":   OTHERWISE,
+	"endcase":     ENDCASE,
 	"local":       LOCAL,
 	"private":     PRIVATE,
 	"public":      PUBLIC,

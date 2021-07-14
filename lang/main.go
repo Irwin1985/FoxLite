@@ -7,9 +7,15 @@ import (
 func main() {
 	//run fibonacci.prg
 	input := `
-		LOCAL A = 20
-		A += 10
+		DO CASE
+		CASE 1 > 1
+			RETURN "POLICIA 1"
+		CASE 1 < 1
+			RETURN "POLICIA 2"
+		CASE 1 != 1
+			RETURN "POLICIA 3"
+		ENDCASE
 	`
-	mode := "repl"
+	mode := "interpreter"
 	repl.Start(mode, input)
 }

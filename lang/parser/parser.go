@@ -112,6 +112,8 @@ func (p *Parser) regSemanticCode() {
 	p.regInfixFn(token.GT, p.parseBinaryExpr)
 	p.regInfixFn(token.LEQ, p.parseBinaryExpr)
 	p.regInfixFn(token.GEQ, p.parseBinaryExpr)
+	p.regInfixFn(token.EQ, p.parseBinaryExpr)
+	p.regInfixFn(token.NEQ, p.parseBinaryExpr)
 
 	p.regInfixFn(token.AND, p.parseBinaryExpr)
 	p.regInfixFn(token.OR, p.parseBinaryExpr)
@@ -144,6 +146,8 @@ func (p *Parser) statement() ast.Stmt {
 		return p.returnStmt()
 	} else if p.match(token.IF) {
 		return p.ifStatement()
+	} else if p.match(token.DO) {
+		return p.doCaseStmt()
 	} else {
 		return p.expressionStatement()
 	}
@@ -204,6 +208,40 @@ func (p *Parser) ifStatement() ast.Stmt {
 	return stmt
 }
 
+func (p *Parser) doCaseStmt() ast.Stmt {
+	stmt := &ast.DoCaseStmt{}
+	stmt.Branches = []*ast.IfStmt{}
+	p.expect(token.CASE, "expected 'CASE' after 'DO'")
+	p.expect(token.NEWLINE, "expected NEWLINE after 'DOCASE'")
+
+	for !p.isAtEnd() && p.match(token.CASE) {
+		ifStmt := &ast.IfStmt{}
+		ifStmt.Condition = p.parseExpression(LOWEST)
+		stmtList := []ast.Stmt{}
+
+		p.expect(token.NEWLINE, "expected NEWLINE after 'CASE' condition")
+		for !p.curTokenIs(token.CASE, token.OTHERWISE, token.ENDCASE) {
+			s := p.statement()
+			if s == nil {
+				return nil
+			}
+			stmtList = append(stmtList, s)
+			p.match(token.NEWLINE)
+		}
+		ifStmt.Consequence = &ast.BlockStmt{Statements: stmtList}
+		stmt.Branches = append(stmt.Branches, ifStmt)
+	}
+
+	// check for otherwise
+	if p.match(token.OTHERWISE) {
+		stmt.Otherwise = p.parseBlockStmt(token.ENDCASE)
+	} else {
+		p.expect(token.ENDCASE, "expected ENDCASE")
+	}
+
+	return stmt
+}
+
 func (p *Parser) parseBlockStmt(t ...token.TokenType) *ast.BlockStmt {
 	block := &ast.BlockStmt{}
 	block.Statements = []ast.Stmt{}
@@ -228,22 +266,62 @@ func (p *Parser) varStatement() ast.Stmt {
 	} else {
 		p.expect(token.IDENT, "expected variable name.")
 		name := &ast.LiteralExpr{Value: p.prevToken}
-		p.expect(token.ASSIGN, "expected '=' before expression.")
-		value := p.parseExpression(LOWEST)
-		if value == nil {
+		if p.match(token.ASSIGN) {
+			value := p.parseExpression(LOWEST)
+			if value == nil {
+				return nil
+			}
+			if p.curTokenIs(token.COMMA) {
+				return p.parseInlineVarStmt(tok, name, value)
+			} else {
+				stmt := &ast.VarStmt{
+					Token: tok,
+					Name:  name,
+					Value: value,
+				}
+				return stmt
+			}
+		} else if p.curTokenIs(token.COMMA) {
+			return p.parseSequenceVarStmt(tok, name)
+		} else {
 			return nil
 		}
-		if p.curTokenIs(token.COMMA) {
-			return p.parseInlineVarStmt(tok, name, value)
-		} else {
-			stmt := &ast.VarStmt{
-				Token: tok,
-				Name:  name,
-				Value: value,
-			}
-			return stmt
-		}
 	}
+}
+
+// parseSequenceVarStmt
+func (p *Parser) parseSequenceVarStmt(tok token.Token, name *ast.LiteralExpr) *ast.InlineVarStmt {
+	stmt := &ast.InlineVarStmt{}
+	stmt.Scope = tok.Type
+	stmt.Variables = []ast.Stmt{}
+
+	// parse list of literals
+	list := []*ast.LiteralExpr{}
+	for !p.isAtEnd() && p.match(token.COMMA) {
+		p.expect(token.IDENT, "expected variable name.")
+		name := &ast.LiteralExpr{Value: p.prevToken}
+		list = append(list, name)
+	}
+	var exp ast.Expr
+	if p.match(token.ASSIGN) {
+		exp = p.parseExpression(LOWEST)
+		if exp == nil {
+			return nil
+		}
+	} else {
+		exp = &ast.LiteralExpr{Value: token.Token{Type: token.FALSE, Lexeme: false}}
+	}
+	// add first fetched variable
+	item := &ast.VarStmt{Name: name, Value: exp}
+	stmt.Variables = append(stmt.Variables, item)
+
+	// now iterate list and create ast.VarStmt{} and push into InlineVarStmt{}
+	for _, l := range list {
+		item = &ast.VarStmt{Name: l, Value: exp}
+		stmt.Variables = append(stmt.Variables, item)
+	}
+
+	return stmt
 }
 
 // inlineVarStmt ::= ('LOCAL'|'PRIVATE'|'PUBLIC') identifier '=' varStmt (',' varStmt)*

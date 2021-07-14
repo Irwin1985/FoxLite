@@ -236,6 +236,25 @@ func (i *Interpreter) VisitIfStmt(stmt *ast.IfStmt) interface{} {
 	return nil
 }
 
+func (i *Interpreter) VisitDoCaseStmt(stmt *ast.DoCaseStmt) interface{} {
+	for _, branch := range stmt.Branches {
+		condition := i.evalExpr(branch.Condition)
+		if isError(condition) {
+			return condition
+		}
+		if typeOf(condition) != 'b' {
+			return newError("data type mismatch")
+		}
+		if condition.(bool) {
+			return i.evalStmt(branch.Consequence)
+		}
+	}
+	if stmt.Otherwise != nil {
+		return i.evalStmt(stmt.Otherwise)
+	}
+	return nil
+}
+
 // HELPER FUNCTIONS
 func (i *Interpreter) evalAssignment(expr *ast.Binary) interface{} {
 	if lit, ok := expr.Left.(*ast.LiteralExpr); ok {

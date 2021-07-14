@@ -114,3 +114,16 @@ func (a *AstPrinter) VisitIfStmt(stmt *IfStmt) interface{} {
 func (a *AstPrinter) VisitCallExpr(expr *CallExpr) interface{} {
 	return nil
 }
+
+func (a *AstPrinter) VisitDoCaseStmt(stmt *DoCaseStmt) interface{} {
+	var out bytes.Buffer
+	out.WriteString(fmt.Sprintf("DO CASE\n"))
+	for _, b := range stmt.Branches {
+		out.WriteString(fmt.Sprintf("   CASE %v\n%v", a.evalExpr(b.Condition), a.evalStmt(b.Consequence)))
+	}
+	if stmt.Otherwise != nil {
+		out.WriteString(fmt.Sprintf("OTHERWISE\n%v", a.evalStmt(stmt.Otherwise)))
+	}
+	out.WriteString(fmt.Sprintf("ENDCASE"))
+	return out.String()
+}
