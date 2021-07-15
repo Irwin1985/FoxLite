@@ -22,7 +22,7 @@ func NewLexer(input string) *Lexer {
 		s:  NewStream(input),
 		lt: token.EOF,
 	}
-	l.consume() // prime the first character
+	l.eat() // prime the first character
 	return l
 }
 
@@ -33,49 +33,49 @@ func (l *Lexer) newToken(t token.TokenType, v interface{}) token.Token {
 	return tok
 }
 
-func isSpace(c rune) bool {
+func isWS(c rune) bool {
 	return c == rune(' ') || c == rune('\t') || c == rune('\r')
 }
 
-func isLetter(c rune) bool {
+func isAZ(c rune) bool {
 	return unicode.IsLetter(c) || c == rune('_')
 }
 
-func isIdent(c rune) bool {
-	return isLetter(c) || unicode.IsNumber(c)
+func isID(c rune) bool {
+	return isAZ(c) || unicode.IsNumber(c)
 }
 
-func (l *Lexer) consume() {
+func (l *Lexer) eat() {
 	l.c = l.s.Read()
 }
 
-func (l *Lexer) isAtEnd() bool {
+func (l *Lexer) isEOF() bool {
 	return l.c == rune(0)
 }
 
 func (l *Lexer) ws() {
-	for !l.isAtEnd() && isSpace(l.c) {
-		l.consume()
+	for !l.isEOF() && isWS(l.c) {
+		l.eat()
 	}
 }
 
-func (l *Lexer) justNum() string {
-	lex := ""
-	for !l.isAtEnd() && unicode.IsNumber(l.c) {
-		lex += string(l.c)
-		l.consume()
+func (l *Lexer) getNum() string {
+	v := ""
+	for !l.isEOF() && unicode.IsNumber(l.c) {
+		v += string(l.c)
+		l.eat()
 	}
-	return lex
+	return v
 }
 
 func (l *Lexer) num() token.Token {
 	lex := string(l.c)
-	l.consume()
-	lex += l.justNum()
+	l.eat()
+	lex += l.getNum()
 	if l.c == '.' && unicode.IsDigit(l.s.Peek()) {
 		lex += "."
-		l.consume()
-		lex += l.justNum()
+		l.eat()
+		lex += l.getNum()
 	}
 
 	v, err := strconv.ParseFloat(lex, 64)
@@ -89,86 +89,86 @@ func (l *Lexer) num() token.Token {
 
 func (l *Lexer) str() token.Token {
 	strEnd := l.c
-	l.consume()
+	l.eat()
 	var lex string
-	for !l.isAtEnd() && l.c != strEnd {
+	for !l.isEOF() && l.c != strEnd {
 		lex += string(l.c)
-		l.consume()
+		l.eat()
 	}
-	l.consume()
+	l.eat()
 	return l.newToken(token.STRING, lex)
 }
 
 func (l *Lexer) ident() token.Token {
-	var lex string
-	for !l.isAtEnd() && isIdent(l.c) {
-		lex += string(l.c)
-		l.consume()
+	var v string
+	for !l.isEOF() && isID(l.c) {
+		v += string(l.c)
+		l.eat()
 	}
-	lex = strings.ToLower(lex)
-	return l.newToken(token.LookupIdent(lex), lex)
+	v = strings.ToLower(v)
+	return l.newToken(token.LookupIdent(v), v)
 }
 
-func (l *Lexer) special(t token.TokenType) token.Token {
-	oldc := string(l.c)
-	l.consume()
-	twoc := oldc + string(l.c)
+func (l *Lexer) punc(t token.TokenType) token.Token {
+	c1 := string(l.c)
+	l.eat()
+	twoc := c1 + string(l.c)
 
 	if tok, ok := token.Special(twoc); ok {
-		l.consume()
+		l.eat()
 		return l.newToken(tok, twoc)
 	}
-	return l.newToken(t, oldc)
+	return l.newToken(t, c1)
 
 }
 
-func isBoolLetter(c rune) bool {
+func isBoolStr(c rune) bool {
 	return c == 't' || c == 'T' || c == 'f' || c == 'F'
 }
 
 func (l *Lexer) dot() token.Token {
 	// we need to recognize this pattern '.' 't|T|f|F' '.'
-	l.consume() // skip the first '.'
-	if isBoolLetter(l.c) && l.s.Peek() == '.' {
+	l.eat() // skip the first '.'
+	if isBoolStr(l.c) && l.s.Peek() == '.' {
 		// defenitely is a boolean token
 		isFalse := l.c == 'f' || l.c == 'F'
-		l.consume() // skip 't' | 'T' | 'f' | 'F'
-		l.consume() // skip '.'
+		l.eat() // skip 't' | 'T' | 'f' | 'F'
+		l.eat() // skip '.'
 		tok := token.TRUE
-		lex := true
+		v := true
 		if isFalse {
 			tok = token.FALSE
-			lex = false
+			v = false
 		}
-		return l.newToken(tok, lex)
+		return l.newToken(tok, v)
 	}
 	return l.newToken(token.DOT, ".")
 }
 
 func (l *Lexer) NextToken() token.Token {
-	for !l.isAtEnd() {
+	for !l.isEOF() {
 		l.ln = l.s.Line
 		l.col = l.s.Col
 		if l.c == rune(';') {
-			l.consume()
+			l.eat()
 			l.lt = token.SEMICOLON
 		}
 		if l.c == rune('\n') {
 			if l.lt == token.EOF || l.lt == token.NEWLINE || l.lt == token.SEMICOLON {
-				l.consume()
+				l.eat()
 				continue
 			} else {
 				return l.newToken(token.NEWLINE, "\\n")
 			}
 		}
-		if isSpace(l.c) {
+		if isWS(l.c) {
 			l.ws()
 			continue
 		}
 		if unicode.IsNumber(l.c) {
 			return l.num()
 		}
-		if isLetter(l.c) {
+		if isAZ(l.c) {
 			return l.ident()
 		}
 		if l.c == rune('\'') || l.c == rune('"') {
@@ -178,7 +178,7 @@ func (l *Lexer) NextToken() token.Token {
 			return l.dot()
 		}
 		if tok, ok := token.Special(string(l.c)); ok {
-			return l.special(tok)
+			return l.punc(tok)
 		}
 		fmt.Printf("Unknown character at [%d:%d]\n", l.ln, l.col)
 		os.Exit(1)

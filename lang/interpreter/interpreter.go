@@ -9,31 +9,32 @@ import (
 )
 
 type Interpreter struct {
-	env       *object.Environment
-	globalEnv *object.Environment
-	program   []ast.Stmt
+	env  *object.Environment
+	gEnv *object.Environment
+	prog []ast.Stmt
 }
 
-func NewInterpreter(program []ast.Stmt, env *object.Environment) *Interpreter {
+func NewInterpreter(prog []ast.Stmt, env *object.Environment) *Interpreter {
 	i := &Interpreter{
-		env:       env,
-		globalEnv: env,
-		program:   program,
+		env:  env,
+		gEnv: env,
+		prog: prog,
 	}
 	return i
 }
 
 func (i *Interpreter) Interpret() interface{} {
-	var result interface{}
-	for _, stmt := range i.program {
-		result = i.evalStmt(stmt)
-		if isError(result) {
-			return result
-		} else if typeOf(result) == 'r' {
-			return result.(*object.Return).Value
+	var r interface{}
+	for _, st := range i.prog {
+		r = i.evalStmt(st)
+		if typeOf(r) == 'e' {
+			return r
+		}
+		if o, ok := r.(*object.Return); ok {
+			return o.Value
 		}
 	}
-	return result
+	return r
 }
 
 func (i *Interpreter) evalStmt(stmt ast.Stmt) interface{} {
@@ -42,6 +43,20 @@ func (i *Interpreter) evalStmt(stmt ast.Stmt) interface{} {
 
 func (i *Interpreter) evalExpr(expr ast.Expr) interface{} {
 	return expr.Accept(i)
+}
+
+func (i *Interpreter) VisitBlockStmt(stmt *ast.BlockStmt) interface{} {
+	var r interface{}
+	for _, s := range stmt.Statements {
+		r = i.evalStmt(s)
+		if o, ok := r.(*object.Return); ok {
+			return o
+		}
+		if typeOf(r) == 'e' {
+			return r
+		}
+	}
+	return nil
 }
 
 func (i *Interpreter) VisitExprStmt(stmt *ast.ExprStmt) interface{} {
@@ -60,74 +75,65 @@ func (i *Interpreter) VisitLiteralExpr(expr *ast.LiteralExpr) interface{} {
 }
 
 func (i *Interpreter) VisitUnaryExpr(expr *ast.Unary) interface{} {
-	right := i.evalExpr(expr.Right)
-	if isError(right) {
-		return right
-	}
-	rType := typeOf(right)
+	v := i.evalExpr(expr.Right)
 	switch expr.Operator.Type {
 	case token.MINUS:
-		if rType == 'n' {
-			return -right.(float32)
+		if r, ok := v.(float32); ok {
+			return -r
 		}
-		return newError("function argument value, type, or count is invalid")
 	case token.BANG:
-		if rType == 'b' {
-			return !right.(bool)
+		if r, ok := v.(bool); ok {
+			return !r
 		}
-		return newError("function argument value, type, or count is invalid")
 	default:
 		return newError("command contains unrecognized phrase/keyword")
 	}
+	return newError("function argument value, type, or count is invalid")
 }
 
 func (i *Interpreter) VisitBinaryExpr(expr *ast.Binary) interface{} {
-	ope := expr.Operator.Type
+	op := expr.Operator.Type
 
-	if ope == token.ASSIGN {
+	if op == token.ASSIGN {
 		return i.evalAssignment(expr)
 	}
 
-	if ope == token.AND || ope == token.OR {
+	if op == token.AND || op == token.OR {
 		return i.evalLogicalExpr(expr)
 	}
 
-	if ope == token.PLUS_EQ || ope == token.MINUS_EQ || ope == token.MUL_EQ || ope == token.DIV_EQ {
+	if op == token.PLUS_EQ || op == token.MINUS_EQ || op == token.MUL_EQ || op == token.DIV_EQ {
 		return i.evalShortAssignment(expr)
 	}
 
-	left := i.evalExpr(expr.Left)
-	if isError(left) {
-		return left
-	}
-	right := i.evalExpr(expr.Right)
-	if isError(right) {
-		return right
-	}
-	lType := typeOf(left)
-	rType := typeOf(right)
+	l := i.evalExpr(expr.Left)
+	r := i.evalExpr(expr.Right)
+	lt := typeOf(l)
+	rt := typeOf(r)
 
-	if lType == 'n' && rType == 'n' {
-		return binaryNumber(left.(float32), ope, right.(float32))
-	} else if lType == 's' && rType == 's' {
-		return binaryString(left.(string), ope, right.(string))
+	if lt == rt {
+		if lt == 'n' {
+			return binaryNumber(l.(float32), op, r.(float32))
+		} else if lt == 's' {
+			return binaryString(l.(string), op, r.(string))
+		}
 	}
 	return newError("operator/operand type mismatch")
 }
 
 func (i *Interpreter) VisitVarStmt(stmt *ast.VarStmt) interface{} {
-	name := stmt.Name.Value.Lexeme.(string)
+	n := stmt.Name.Value.Lexeme.(string)
 	value := i.evalExpr(stmt.Value)
-	if isError(value) {
+	if typeOf(value) == 'e' {
 		return value
 	}
 	// PUBLIC variables goes directly in globalEnv
 	if stmt.Token.Type == token.PUBLIC {
-		i.globalEnv.Set(name, value, stmt.Token.Type)
+		i.gEnv.Set(n, value, stmt.Token.Type)
 		return nil
 	}
 
-	i.env.Set(name, value, stmt.Token.Type)
+	i.env.Set(n, value, stmt.Token.Type)
 	return nil
 }
 
@@ -135,98 +141,79 @@ func (i *Interpreter) VisitInlineVarStmt(stmt *ast.InlineVarStmt) interface{} {
 	curEnv := i.env
 	// PUBLIC variables goes directly in globalEnv
 	if stmt.Scope == token.PUBLIC {
-		curEnv = i.globalEnv
+		curEnv = i.gEnv
 	}
-	for _, value := range stmt.Variables {
-		node := value.(*ast.VarStmt)
-		value := i.evalExpr(node.Value)
-		if isError(value) {
-			return value
+	for _, vars := range stmt.Variables {
+		node := vars.(*ast.VarStmt)
+		r := i.evalExpr(node.Value)
+		if typeOf(r) == 'e' {
+			return r
 		}
-		curEnv.Set(node.Name.Value.Lexeme.(string), value, stmt.Scope)
+		curEnv.Set(node.Name.Value.Lexeme.(string), r, stmt.Scope)
 	}
 	return nil
 }
 
-func (i *Interpreter) VisitBlockStmt(stmt *ast.BlockStmt) interface{} {
-	var result interface{}
-	for _, s := range stmt.Statements {
-		result = i.evalStmt(s)
-		if isError(result) || typeOf(result) == 'r' {
-			return result
-		}
-	}
-	return result
-}
-
 func (i *Interpreter) VisitFunctionStmt(stmt *ast.FunctionStmt) interface{} {
-	funObj := &object.Function{}
-	funObj.Name = stmt.Name.Lexeme.(string)
-	funObj.Parameters = stmt.Parameters
-	funObj.Body = stmt.Body
-	funObj.Env = i.env
-	name := funObj.Name
+	fn := &object.Function{}
+	fn.Name = stmt.Name.Lexeme.(string)
+	fn.Parameters = stmt.Parameters
+	fn.Body = stmt.Body
+	fn.Env = i.env
+	name := fn.Name
 	_, err := i.env.Get(name)
 	if err == nil {
-		return newError(fmt.Sprintf("invalid function name: '%s'", name))
+		return newError(fmt.Sprintf("name in use: '%s'", name))
 	}
-	i.env.Set(name, funObj, token.PRIVATE)
+	i.env.Set(name, fn, token.PRIVATE)
 
 	return nil
 }
 
 func (i *Interpreter) VisitCallExpr(expr *ast.CallExpr) interface{} {
-	left := i.evalExpr(expr.Function)
-	if isError(left) {
-		return left
-	}
-	if typeOf(left) != 'f' {
+	r := i.evalExpr(expr.Function)
+	if typeOf(r) != 'f' {
 		return newError("Syntax error: left hand side must be a function definition")
 	}
-	if funObj, ok := left.(*object.Function); ok {
-		args := i.evalArguments(expr.Arguments)
-		if len(args) == 1 && isError(args[0]) {
-			return args[0]
-		}
-
-		return i.applyFunction(funObj, args)
+	fn := r.(*object.Function)
+	args := i.evalArguments(expr.Arguments)
+	if len(args) == 1 && typeOf(args[0]) == 'e' {
+		return args[0]
 	}
-	return nil
+
+	return i.applyFunction(fn, args)
 }
 
 func (i *Interpreter) evalArguments(args []ast.Expr) []interface{} {
 	exps := []interface{}{}
 
-	var result interface{}
+	var r interface{}
 	for _, e := range args {
-		result = i.evalExpr(e)
-		if result == nil {
-			return []interface{}{e}
+		r = i.evalExpr(e)
+		if typeOf(r) == 'e' {
+			return []interface{}{r}
 		}
-		exps = append(exps, result)
+		exps = append(exps, r)
 	}
 
 	return exps
 }
 
 func (i *Interpreter) VisitReturnStmt(stmt *ast.ReturnStmt) interface{} {
-	result := i.evalExpr(stmt.Value)
-	if isError(result) {
-		return result
+	r := i.evalExpr(stmt.Value)
+	if typeOf(r) == 'e' {
+		return r
 	}
 
-	return &object.Return{Value: result}
+	return &object.Return{Value: r}
 }
 
 func (i *Interpreter) VisitIfStmt(stmt *ast.IfStmt) interface{} {
-	condition := i.evalExpr(stmt.Condition)
-	if isError(condition) {
-		return condition
-	}
-	if typeOf(condition) != 'b' {
+	r := i.evalExpr(stmt.Condition)
+	if typeOf(r) != 'b' {
 		return newError("data type mismatch")
 	}
-	if condition.(bool) {
+	if b, ok := r.(bool); ok && b {
 		return i.evalStmt(stmt.Consequence)
 	} else {
 		if stmt.Alternative != nil {
@@ -237,14 +224,11 @@ func (i *Interpreter) VisitIfStmt(stmt *ast.IfStmt) interface{} {
 }
 
 func (i *Interpreter) VisitIifExpr(expr *ast.IifExpr) interface{} {
-	cond := i.evalExpr(expr.Condition)
-	if isError(cond) {
-		return cond
-	}
-	if typeOf(cond) != 'b' {
+	r := i.evalExpr(expr.Condition)
+	if typeOf(r) != 'b' {
 		return newError("data type mismatch")
 	}
-	if cond.(bool) {
+	if b, ok := r.(bool); ok && b {
 		return i.evalExpr(expr.Consequence)
 	} else {
 		return i.evalExpr(expr.Alternative)
@@ -252,16 +236,13 @@ func (i *Interpreter) VisitIifExpr(expr *ast.IifExpr) interface{} {
 }
 
 func (i *Interpreter) VisitDoCaseStmt(stmt *ast.DoCaseStmt) interface{} {
-	for _, branch := range stmt.Branches {
-		condition := i.evalExpr(branch.Condition)
-		if isError(condition) {
-			return condition
-		}
-		if typeOf(condition) != 'b' {
+	for _, bl := range stmt.Branches {
+		r := i.evalExpr(bl.Condition)
+		if typeOf(r) != 'b' {
 			return newError("data type mismatch")
 		}
-		if condition.(bool) {
-			return i.evalStmt(branch.Consequence)
+		if b, ok := r.(bool); ok && b {
+			return i.evalStmt(bl.Consequence)
 		}
 	}
 	if stmt.Otherwise != nil {
@@ -270,12 +251,28 @@ func (i *Interpreter) VisitDoCaseStmt(stmt *ast.DoCaseStmt) interface{} {
 	return nil
 }
 
+func (i *Interpreter) VisitWhileStmt(stmt *ast.WhileStmt) interface{} {
+	for {
+		if b, ok := i.evalExpr(stmt.Condition).(bool); ok && b {
+			r := i.evalStmt(stmt.Block)
+			if o, ok := r.(*object.Return); ok {
+				return o
+			}
+			if typeOf(r) == 'e' {
+				return r
+			}
+		} else {
+			return newError("data type mismatch")
+		}
+	}
+}
+
 // HELPER FUNCTIONS
 func (i *Interpreter) evalAssignment(expr *ast.Binary) interface{} {
-	if lit, ok := expr.Left.(*ast.LiteralExpr); ok {
-		if name, ok := lit.Value.Lexeme.(string); ok {
-			result := i.evalExpr(expr.Right)
-			i.env.Assign(name, result, token.PRIVATE)
+	if l, ok := expr.Left.(*ast.LiteralExpr); ok {
+		if name, ok := l.Value.Lexeme.(string); ok {
+			r := i.evalExpr(expr.Right)
+			i.env.Assign(name, r, token.PRIVATE)
 			return nil
 		}
 	}
@@ -283,178 +280,171 @@ func (i *Interpreter) evalAssignment(expr *ast.Binary) interface{} {
 }
 
 func (i *Interpreter) evalLogicalExpr(expr *ast.Binary) interface{} {
-	left := i.evalExpr(expr.Left)
-	if isError(left) {
-		return left
-	}
-	if typeOf(left) != 'b' {
-		return newError("function argument value, type or count is invalid.")
-	}
-	leftVal := left.(bool)
-	ope := expr.Operator.Type
+	r := i.evalExpr(expr.Left)
+	if v, ok := r.(bool); ok {
+		op := expr.Operator.Type
 
-	if ope == token.AND && !leftVal {
-		return i.evalRightExpr(expr.Right)
-	}
-	if ope == token.OR && !leftVal {
-		return i.evalRightExpr(expr.Right)
-	}
-	return true
-}
-
-func (i *Interpreter) evalRightExpr(expr ast.Expr) interface{} {
-	right := i.evalExpr(expr)
-	if isError(right) {
-		return right
-	}
-	if typeOf(right) != 'b' {
-		return newError("function argument value, type or count is invalid.")
-	}
-	return right.(bool)
-}
-
-func (i *Interpreter) evalShortAssignment(expr *ast.Binary) interface{} {
-	if left, ok := expr.Left.(*ast.LiteralExpr); ok {
-		name := left.Value.Lexeme.(string)
-		refEnv := i.env.GetEnv(name)
-		if refEnv == nil {
-			return newError(fmt.Sprintf("Variable '%v' is not found.", name))
-		}
-		scope := refEnv.Store[name].(*object.Scope)
-		leftValue := scope.Value
-
-		if typeOf(leftValue) == 'n' || typeOf(leftValue) == 's' {
-			right := i.evalExpr(expr.Right)
-			if isError(right) {
-				return right
+		if op == token.AND {
+			if v {
+				return i.evalRightExpr(expr.Right)
 			}
-			ope := expr.Operator.Type
-			switch right.(type) {
-			case string:
-				if typeOf(right) != 's' {
-					return newError("Operator/operand type mismatch.")
-				}
-				switch ope {
-				case token.PLUS_EQ:
-					res := leftValue.(string) + right.(string)
-					scope.Value = res
-					refEnv.Store[name] = scope
-				case token.MINUS_EQ:
-					res := strings.TrimRight(leftValue.(string), " ") + right.(string)
-					scope.Value = res
-					refEnv.Store[name] = scope
-				default:
-					return newError("function argument value, type or count is invalid.")
-				}
-			case float32:
-				if typeOf(right) != 'n' {
-					return newError("Operator/operand type mismatch.")
-				}
-				switch ope {
-				case token.PLUS_EQ:
-					res := leftValue.(float32) + right.(float32)
-					scope.Value = res
-					refEnv.Store[name] = scope
-				case token.MINUS_EQ:
-					res := leftValue.(float32) - right.(float32)
-					scope.Value = res
-					refEnv.Store[name] = scope
-				case token.MUL_EQ:
-					res := leftValue.(float32) * right.(float32)
-					scope.Value = res
-					refEnv.Store[name] = scope
-				case token.DIV_EQ:
-					rightVal := scope.Value.(float32)
-					if rightVal == 0 {
-						return newError("division by zero.")
-					}
-					res := leftValue.(float32) / right.(float32)
-					scope.Value = res
-					refEnv.Store[name] = scope
-				default:
-					return newError("function argument value, type or count is invalid.")
-				}
-			}
-			return nil
+			return false
 		}
+		if op == token.OR {
+			if !v {
+				return i.evalRightExpr(expr.Right)
+			}
+			return true
+		}
+		return nil
 	}
 	return newError("function argument value, type or count is invalid.")
 }
 
-func binaryNumber(left float32, ope token.TokenType, right float32) interface{} {
-	switch ope {
-	case token.PLUS:
-		return left + right
-	case token.MINUS:
-		return left - right
-	case token.MUL:
-		return left * right
-	case token.DIV:
-		if right == 0 {
-			return newError("error: division by zero")
+func (i *Interpreter) evalRightExpr(expr ast.Expr) interface{} {
+	if v, ok := i.evalExpr(expr).(bool); ok {
+		return v
+	}
+	return newError("function argument value, type or count is invalid.")
+}
+
+func (i *Interpreter) evalShortAssignment(expr *ast.Binary) interface{} {
+	if l, ok := expr.Left.(*ast.LiteralExpr); ok {
+		n := l.Value.Lexeme.(string)
+		refEnv := i.env.GetEnv(n)
+		if refEnv == nil {
+			return newError(fmt.Sprintf("Variable '%v' is not found.", n))
 		}
-		return left / right
+
+		scope := refEnv.Store[n].(*object.Scope)
+		lv := scope.Value
+		t := typeOf(lv)
+		if t != 'n' && t != 's' {
+			return newError("operator/operand type mismatch.")
+		}
+
+		rv := i.evalExpr(expr.Right)
+		rt := typeOf(rv)
+		op := expr.Operator.Type
+
+		switch rt {
+		case 's':
+			var lv = lv.(string)
+			var rv = rv.(string)
+			switch op {
+			case token.PLUS_EQ:
+				scope.Value = lv + rv
+				refEnv.Store[n] = scope
+			case token.MINUS_EQ:
+				scope.Value = strings.TrimRight(lv, " ") + rv
+				refEnv.Store[n] = scope
+			default:
+				return newError("missing operand")
+			}
+		case 'n':
+			var lv = lv.(float32)
+			var rv = rv.(float32)
+			switch op {
+			case token.PLUS_EQ:
+				scope.Value = lv + rv
+				refEnv.Store[n] = scope
+			case token.MINUS_EQ:
+				scope.Value = lv - rv
+				refEnv.Store[n] = scope
+			case token.MUL_EQ:
+				scope.Value = lv * rv
+				refEnv.Store[n] = scope
+			case token.DIV_EQ:
+				if rv == 0 {
+					return newError("division by zero.")
+				}
+				scope.Value = lv / rv
+				refEnv.Store[n] = scope
+			default:
+				return newError("missing operand")
+			}
+		default:
+			return newError("operator/operand type mismatch.")
+		}
+		return nil
+	}
+	return newError("function argument value, type or count is invalid.")
+}
+
+func binaryNumber(lv float32, op token.TokenType, rv float32) interface{} {
+	switch op {
+	case token.PLUS:
+		return lv + rv
+	case token.MINUS:
+		return lv - rv
+	case token.MUL:
+		return lv * rv
+	case token.DIV:
+		if rv == 0 {
+			return newError("division by zero")
+		}
+		return lv / rv
 	case token.LT:
-		return left < right
+		return lv < rv
 	case token.GT:
-		return left > right
+		return lv > rv
 	case token.LEQ:
-		return left <= right
+		return lv <= rv
 	case token.GEQ:
-		return left >= right
+		return lv >= rv
 	case token.EQ:
-		return left == right
+		return lv == rv
 	case token.NEQ:
-		return left != right
+		return lv != rv
 	default:
-		return newError("data type mismatch")
+		return newError("missing operand")
 	}
 }
 
-func binaryString(left string, ope token.TokenType, right string) interface{} {
-	switch ope {
+func binaryString(lv string, op token.TokenType, rv string) interface{} {
+	switch op {
 	case token.PLUS:
-		return left + right
+		return lv + rv
 	case token.MINUS:
-		return strings.TrimRight(left, " ") + right
+		return strings.TrimRight(lv, " ") + rv
 	case token.EQ:
-		return left == right
+		return lv == rv
 	default:
-		return newError("data type mismatch")
+		return newError("missing operand")
 	}
 }
 
 func (i *Interpreter) applyFunction(fn *object.Function, args []interface{}) interface{} {
 	// do some parameters validation
-	fnParNum := len(fn.Parameters)
-	argNum := len(args)
+	fnPn := len(fn.Parameters)
+	argn := len(args)
 	// 1. function does not implement parameters and got some.
-	if fnParNum == 0 && argNum > 0 {
+	if fnPn == 0 && argn > 0 {
 		return newError("No PARAMETER statement is found")
 	}
 	// 2. function expect more parameters that expected ones.
-	if argNum > fnParNum {
+	if argn > fnPn {
 		return newError("Must specify additional parameters.")
 	}
-	extendedEnv := extendFunctionEnv(fn, args)
+	newEnv := extendFunctionEnv(fn, args)
 
 	oldEnv := i.env
-	i.env = extendedEnv
+	i.env = newEnv
 
 	evaluated := i.evalStmt(fn.Body)
 	i.env = oldEnv
+
 	return unwrapReturnValue(evaluated)
 }
 
 func extendFunctionEnv(fn *object.Function, args []interface{}) *object.Environment {
 	env := object.NewEnclosedEnvironment(fn.Env)
 
-	for paramIdx, param := range fn.Parameters {
-		if paramIdx < len(args) {
-			env.Set(param.Value.Lexeme.(string), args[paramIdx], token.PRIVATE)
+	for i, p := range fn.Parameters {
+		if i < len(args) {
+			env.Set(p.Value.Lexeme.(string), args[i], token.PRIVATE)
 		} else {
-			// add false as default
-			env.Set(param.Value.Lexeme.(string), false, token.PRIVATE)
+			env.Set(p.Value.Lexeme.(string), false, token.PRIVATE) // false as default
 		}
 	}
 
@@ -462,13 +452,16 @@ func extendFunctionEnv(fn *object.Function, args []interface{}) *object.Environm
 }
 
 func unwrapReturnValue(obj interface{}) interface{} {
-	if returnValue, ok := obj.(*object.Return); ok {
-		return returnValue.Value
+	if rv, ok := obj.(*object.Return); ok {
+		return rv.Value
 	}
 	return obj
 }
 
 func typeOf(t interface{}) byte {
+	if t == nil {
+		return 'x'
+	}
 	switch t.(type) {
 	case string:
 		return 's'
@@ -480,24 +473,13 @@ func typeOf(t interface{}) byte {
 		return 'f'
 	case *object.Return:
 		return 'r'
+	case *object.Error:
+		return 'e'
 	default:
-		return 'x'
+		return 'u'
 	}
 }
 
 func newError(msg string) *object.Error {
 	return &object.Error{Message: msg}
-}
-
-func isError(i interface{}) bool {
-	if i == nil {
-		return false
-	}
-
-	switch i.(type) {
-	case *object.Error:
-		return true
-	default:
-		return false
-	}
 }

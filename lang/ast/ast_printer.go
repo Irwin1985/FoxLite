@@ -133,3 +133,11 @@ func (a *AstPrinter) VisitIifExpr(expr *IifExpr) interface{} {
 	out.WriteString(fmt.Sprintf("IIF(%v, %v, %v)", a.evalExpr(expr.Condition), a.evalExpr(expr.Consequence), a.evalExpr(expr.Alternative)))
 	return out.String()
 }
+
+func (a *AstPrinter) VisitWhileStmt(stmt *WhileStmt) interface{} {
+	var out bytes.Buffer
+	out.WriteString(fmt.Sprintf("DO WHILE (%v)\n", a.evalExpr(stmt.Condition)))
+	out.WriteString(fmt.Sprintf("%v", a.evalStmt(stmt.Block)))
+	out.WriteString("ENDDO")
+	return out.String()
+}

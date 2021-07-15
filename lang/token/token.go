@@ -69,7 +69,7 @@ const (
 	CASE
 	OTHERWISE
 	ENDCASE
-	DOWHILE
+	WHILE
 	ENDDO
 	FOR
 	EACH
@@ -146,7 +146,7 @@ var TokenNames = []string{
 	"CASE",
 	"OTHERWISE",
 	"ENDCASE",
-	"DOWHILE",
+	"WHILE",
 	"ENDDO",
 	"FOR",
 	"EACH",
@@ -168,6 +168,8 @@ var keywords = map[string]TokenType{
 	"case":        CASE,
 	"otherwise":   OTHERWISE,
 	"endcase":     ENDCASE,
+	"while":       WHILE,
+	"enddo":       ENDDO,
 	"local":       LOCAL,
 	"private":     PRIVATE,
 	"public":      PUBLIC,

@@ -148,7 +148,14 @@ func (p *Parser) statement() ast.Stmt {
 	} else if p.match(token.IF) {
 		return p.ifStatement()
 	} else if p.match(token.DO) {
-		return p.doCaseStmt()
+		if p.match(token.CASE) {
+			return p.doCaseStmt()
+		} else if p.match(token.WHILE) {
+			return p.doWhileStmt()
+		} else {
+			p.newError("Syntax Error: unrecognized command verb.")
+			return nil
+		}
 	} else {
 		return p.expressionStatement()
 	}
@@ -212,7 +219,6 @@ func (p *Parser) ifStatement() ast.Stmt {
 func (p *Parser) doCaseStmt() ast.Stmt {
 	stmt := &ast.DoCaseStmt{}
 	stmt.Branches = []*ast.IfStmt{}
-	p.expect(token.CASE, "expected 'CASE' after 'DO'")
 	p.expect(token.NEWLINE, "expected NEWLINE after 'DOCASE'")
 
 	for !p.isAtEnd() && p.match(token.CASE) {
@@ -239,6 +245,14 @@ func (p *Parser) doCaseStmt() ast.Stmt {
 	} else {
 		p.expect(token.ENDCASE, "expected ENDCASE")
 	}
+
+	return stmt
+}
+
+func (p *Parser) doWhileStmt() ast.Stmt {
+	stmt := &ast.WhileStmt{}
+	stmt.Condition = p.parseExpression(LOWEST)
+	stmt.Block = p.parseBlockStmt(token.ENDDO)
 
 	return stmt
 }

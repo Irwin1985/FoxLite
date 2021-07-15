@@ -11,6 +11,7 @@ type VisitorStmt interface {
 	VisitIfStmt(stmt *IfStmt) interface{}
 	VisitInlineVarStmt(stmt *InlineVarStmt) interface{}
 	VisitDoCaseStmt(stmt *DoCaseStmt) interface{}
+	VisitWhileStmt(stmt *WhileStmt) interface{}
 }
 
 type Stmt interface {
@@ -87,4 +88,13 @@ type DoCaseStmt struct {
 
 func (stmt *DoCaseStmt) Accept(v VisitorStmt) interface{} {
 	return v.VisitDoCaseStmt(stmt)
+}
+
+type WhileStmt struct {
+	Condition Expr
+	Block     *BlockStmt
+}
+
+func (stmt *WhileStmt) Accept(v VisitorStmt) interface{} {
+	return v.VisitWhileStmt(stmt)
 }
