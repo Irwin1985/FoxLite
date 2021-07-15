@@ -236,6 +236,21 @@ func (i *Interpreter) VisitIfStmt(stmt *ast.IfStmt) interface{} {
 	return nil
 }
 
+func (i *Interpreter) VisitIifExpr(expr *ast.IifExpr) interface{} {
+	cond := i.evalExpr(expr.Condition)
+	if isError(cond) {
+		return cond
+	}
+	if typeOf(cond) != 'b' {
+		return newError("data type mismatch")
+	}
+	if cond.(bool) {
+		return i.evalExpr(expr.Consequence)
+	} else {
+		return i.evalExpr(expr.Alternative)
+	}
+}
+
 func (i *Interpreter) VisitDoCaseStmt(stmt *ast.DoCaseStmt) interface{} {
 	for _, branch := range stmt.Branches {
 		condition := i.evalExpr(branch.Condition)
@@ -402,6 +417,8 @@ func binaryString(left string, ope token.TokenType, right string) interface{} {
 		return left + right
 	case token.MINUS:
 		return strings.TrimRight(left, " ") + right
+	case token.EQ:
+		return left == right
 	default:
 		return newError("data type mismatch")
 	}

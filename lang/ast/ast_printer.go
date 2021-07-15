@@ -127,3 +127,9 @@ func (a *AstPrinter) VisitDoCaseStmt(stmt *DoCaseStmt) interface{} {
 	out.WriteString(fmt.Sprintf("ENDCASE"))
 	return out.String()
 }
+
+func (a *AstPrinter) VisitIifExpr(expr *IifExpr) interface{} {
+	var out bytes.Buffer
+	out.WriteString(fmt.Sprintf("IIF(%v, %v, %v)", a.evalExpr(expr.Condition), a.evalExpr(expr.Consequence), a.evalExpr(expr.Alternative)))
+	return out.String()
+}

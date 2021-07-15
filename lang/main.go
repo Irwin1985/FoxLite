@@ -6,16 +6,7 @@ import (
 
 func main() {
 	//run fibonacci.prg
-	input := `
-		DO CASE
-		CASE 1 > 1
-			RETURN "POLICIA 1"
-		CASE 1 < 1
-			RETURN "POLICIA 2"
-		CASE 1 != 1
-			RETURN "POLICIA 3"
-		ENDCASE
-	`
-	mode := "interpreter"
+	input := `IIF(1 == 1, "POLICIA 1", "POLICIA 2")`
+	mode := "repl"
 	repl.Start(mode, input)
 }

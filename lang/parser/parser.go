@@ -97,6 +97,7 @@ func (p *Parser) regSemanticCode() {
 	p.regPrefixFn(token.MINUS, p.parseUnaryExpr)
 	p.regPrefixFn(token.BANG, p.parseUnaryExpr)
 	p.regPrefixFn(token.LPAREN, p.parseGroupedExpr)
+	p.regPrefixFn(token.IIF, p.parseIifExpr)
 
 	// Semantic code for infix tokens
 	p.regInfixFn(token.PLUS, p.parseBinaryExpr)
@@ -496,6 +497,23 @@ func (p *Parser) parseGroupedExpr() ast.Expr {
 	p.expect(token.RPAREN, "expected ')' after expression.")
 
 	return exp
+}
+
+func (p *Parser) parseIifExpr() ast.Expr {
+	expr := &ast.IifExpr{}
+	p.advance() // skip IIF
+	p.expect(token.LPAREN, "expected '(' before condition")
+
+	expr.Condition = p.parseExpression(LOWEST)
+	p.expect(token.COMMA, "expected ',' after condition")
+
+	expr.Consequence = p.parseExpression(LOWEST)
+	p.expect(token.COMMA, "expected ',' after consequence")
+
+	expr.Alternative = p.parseExpression(LOWEST)
+	p.expect(token.RPAREN, "expected ')'")
+
+	return expr
 }
 
 func (p *Parser) regPrefixFn(t token.TokenType, fn prefixFn) {
