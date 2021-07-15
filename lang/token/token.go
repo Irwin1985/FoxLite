@@ -55,6 +55,10 @@ const (
 	LOCAL
 	PRIVATE
 	PUBLIC
+	AS
+	STRING_T
+	NUMBER_T
+	BOOLEAN_T
 	TRUE
 	FALSE
 	NULL
@@ -132,6 +136,10 @@ var TokenNames = []string{
 	"LOCAL",
 	"PRIVATE",
 	"PUBLIC",
+	"AS",
+	"STRING",
+	"NUMBER",
+	"BOOLEAN",
 	"TRUE",
 	"FALSE",
 	"NULL",
@@ -173,6 +181,10 @@ var keywords = map[string]TokenType{
 	"local":       LOCAL,
 	"private":     PRIVATE,
 	"public":      PUBLIC,
+	"as":          AS,
+	"string":      STRING_T,
+	"number":      NUMBER_T,
+	"boolean":     BOOLEAN_T,
 	".t.":         TRUE,
 	".f.":         FALSE,
 	"null":        NULL,

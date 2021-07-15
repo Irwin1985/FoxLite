@@ -55,6 +55,7 @@ func (stmt *ExprStmt) Accept(v VisitorStmt) interface{} {
 type VarStmt struct {
 	Token token.Token
 	Name  *LiteralExpr
+	Type  token.TokenType
 	Value Expr
 }
 

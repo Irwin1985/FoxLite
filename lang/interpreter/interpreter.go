@@ -123,9 +123,21 @@ func (i *Interpreter) VisitBinaryExpr(expr *ast.Binary) interface{} {
 
 func (i *Interpreter) VisitVarStmt(stmt *ast.VarStmt) interface{} {
 	n := stmt.Name.Value.Lexeme.(string)
-	value := i.evalExpr(stmt.Value)
-	if typeOf(value) == 'e' {
-		return value
+	var value interface{}
+	if stmt.Value != nil {
+		value = i.evalExpr(stmt.Value)
+		if typeOf(value) == 'e' {
+			return value
+		}
+	} else {
+		switch stmt.Type {
+		case token.STRING_T:
+			value = ""
+		case token.NUMBER_T:
+			value = 0
+		case token.BOOLEAN_T:
+			value = false
+		}
 	}
 	// PUBLIC variables goes directly in globalEnv
 	if stmt.Token.Type == token.PUBLIC {

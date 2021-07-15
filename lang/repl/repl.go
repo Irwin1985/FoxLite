@@ -62,11 +62,11 @@ func repl() {
 		if !scanned {
 			break
 		}
-		input := strings.ToLower(scanner.Text())
-		if len(input) < 0 {
+		input := scanner.Text()
+		if len(input) <= 0 {
 			continue
 		}
-		if input == "quit" {
+		if strings.ToLower(input) == "quit" {
 			break
 		}
 		evalInput(input)
@@ -74,10 +74,10 @@ func repl() {
 }
 
 func evalInput(input string) {
-	if len(input) < 4 {
+	if len(input) < 5 {
 		run(input)
 	} else {
-		if input[0:4] == "run " {
+		if strings.ToLower(input[0:4]) == "run " {
 			samplePath := getSamplePath()
 			filePath := strings.ToLower(samplePath + strings.TrimSpace(input[3:]))
 			if filePath[len(filePath)-4:] != ".prg" {
@@ -87,7 +87,7 @@ func evalInput(input string) {
 			if err != nil {
 				fmt.Printf("%s\n%v\n", ERROR, err)
 			}
-		} else if input[0:5] == "edit " {
+		} else if strings.ToLower(input[0:5]) == "edit " {
 			samplePath := getSamplePath()
 			filePath := strings.ToLower(samplePath + strings.TrimSpace(input[4:]))
 			if filePath[len(filePath)-4:] != ".prg" {

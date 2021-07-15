@@ -298,6 +298,11 @@ func (p *Parser) varStatement() ast.Stmt {
 			}
 		} else if p.curTokenIs(token.COMMA) {
 			return p.parseSequenceVarStmt(tok, name)
+		} else if p.match(token.AS) {
+			if p.match(token.STRING_T, token.NUMBER_T, token.BOOLEAN_T) {
+				return &ast.VarStmt{Name: name, Type: p.prevToken.Type}
+			}
+			return nil
 		} else {
 			return nil
 		}
