@@ -6,7 +6,9 @@ import (
 
 func main() {
 	//run fibonacci.prg
-	input := `hola`
-	mode := "repl"
+	input := `		
+		LOCAL PI = 3.14
+	`
+	mode := "lexer"
 	repl.Start(mode, input)
 }

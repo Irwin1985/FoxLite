@@ -35,6 +35,15 @@ func (s *Stream) Read() rune {
 	return c
 }
 
+func (s *Stream) Substr(x int) string {
+	y := s.pos
+	return string(s.input)[x:y]
+}
+
+func (s *Stream) Pos() int {
+	return s.pos
+}
+
 func (s *Stream) Peek() rune {
 	if s.End() {
 		return EOF_CHAR

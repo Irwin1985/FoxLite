@@ -60,12 +60,11 @@ func (l *Lexer) ws() {
 }
 
 func (l *Lexer) getNum() string {
-	v := ""
+	pos := l.s.Pos()
 	for !l.isEOF() && unicode.IsNumber(l.c) {
-		v += string(l.c)
 		l.eat()
 	}
-	return v
+	return l.s.Substr(pos)
 }
 
 func (l *Lexer) num() token.Token {
@@ -90,22 +89,23 @@ func (l *Lexer) num() token.Token {
 func (l *Lexer) str() token.Token {
 	strEnd := l.c
 	l.eat()
+	pos := l.s.Pos()
 	var lex string
 	for !l.isEOF() && l.c != strEnd {
-		lex += string(l.c)
 		l.eat()
 	}
+	lex = l.s.Substr(pos)
 	l.eat()
 	return l.newToken(token.STRING, lex)
 }
 
 func (l *Lexer) ident() token.Token {
+	pos := l.s.Pos()
 	var v string
 	for !l.isEOF() && isID(l.c) {
-		v += string(l.c)
 		l.eat()
 	}
-	v = strings.ToLower(v)
+	v = strings.ToLower(l.s.Substr(pos))
 	return l.newToken(token.LookupIdent(v), v)
 }
 
