@@ -1,1 +1,0 @@
-return "Soy el bananero de los lenguajes de programación"
