@@ -219,6 +219,105 @@ Como habrás notado **ALLTRIM()** ha perdido parte de su pelaje y ahora es solo 
    ?nombre[0:3]
 ```
 
-- **Sensibilidad a las Mayúsculas:** está claro que los lenguajes modernos son sensitivos a las mayúsculas así que FoxLite tiene que seguir el mismo estándar, esto no es un capricho sino que más bien es para favorecer la escritura y la legibilidad del código.
+- **Sensibilidad a las Mayúsculas:** está claro que los lenguajes modernos son sensitivos a las mayúsculas así que FoxLite tiene que seguir el mismo estándar, esto no es un capricho sino que más bien es para favorecer la escritura y la legibilidad del código. **Visual FoxPro** es insensible a las mayúsculas y eso tiene sus ventajas pero también es verdad que le resta legibilidad al tener todo el código en mayúsculas *(que suele ser lo más habitual)* lo cual genera pequeños problemas, por ejemplo, siempre escribo en minúsculas pero cuando trabajo con compañeros siempre me terminan formateando el código a mayúsculas con la utilidad **Beautify** y tengo que volver a llevar mi código a minúsculas para que luego me lo vuelvan a reformatear.
+
+Los lenguajes modernos incluso vienen con una utilidad integrada para formatear el código fuente, cosa que me parece estupenda y la tendré en mente para incluirsela a **FoxLite** en su versión Consola.
 
 
+- **Procedimientos:** los procedures serán remplazados por las funciones.
+
+- **String multilínea con TEXT/TO:** aunque particularmente me gusta usarlo, el text to será remplazado por una versión más simplista inspirada por [vLang](https://vlang.io/).
+
+
+## Lo nuevo de FoxLite
+
+No se le puede llamar *lenguaje moderno* sin que tenga características modernas verdad?, entonces vamos a ver algunas de las cosas que nos ofrecerá este lenguaje.
+
+- **Closures:** esta es quizá una de las características más ambiciosas, se trata de crear funciones dentro de otras funciones. Esto al principio puede ser confuso pero una vez que las conozcan verán el poder que ofrecen.
+
+- **Funciones de alto orden:** esto es basicamente tratar a las funciones como al resto de los tipos de datos, es decir, que se puedan declarar como variables, pasar como argumentos y retornar desde otras funciones.
+
+- **Diccionarios:** como vimos en la sintaxis de Fox, se pueden crear diccionarios o *Collection* pero son un poco verbosas. **FoxLite** tratará los diccionarios de una forma más fácil y entendible.
+
+```Javascript
+// declarar el diccionario
+datos = createobject("Collection")
+datos["nombre"] = "Juan"
+datos["edad"] = 36
+datos["casado"] = false
+
+// imprimir los datos
+?datos["nombre"]
+?datos["edad"]
+?datos["casado"]
+```
+
+- **Arrays:** los arrays también cambiarán su estructura a la forma moderna y creo que la mejor parte con respecto a los arrays de **FoxPro** es que se podrán retornar desde las funciones.
+
+```Javascript
+// declarar el array
+frutas = ["Manzana", "Mango", "Melocotón"]
+
+// imprimir el array
+?frutas[0]
+?frutas[1]
+?frutas[2]
+```
+
+- **String Multilínea:** un string se delimita por sus comillas simples o dobles pero también existe otro delimitador llamado *backtick*, veamos un ejemplo:
+
+```Javascript
+a = 'string 
+con
+comillas 
+simples'
+
+b = "string
+con
+comillas
+dobles"
+
+c = `string
+con
+el
+delimitador
+backtick
+`
+```
+
+- **Interpolación de string:** también se solía hacer con TEXT TO usando los dobles ángulos ```<<variable>>``` pero ahora se hará de una manera más sencilla.
+
+```Javascript
+nombre = "juan"
+apellido = "perez"
+? "Hola, mi nombre es $nombre y mi apellido $apellido."
+```
+
+- **JSON Nativo:** con dos funciones nativas ya podremos serializar y deserializar objetos JSON.
+
+```Javascript
+// declarar el diccionario
+datos = createobject("Collection")
+datos["nombre"] = "Juan"
+datos["edad"] = 36
+datos["casado"] = false
+
+// convertir a string JSON 
+?JSONTOSTR(datos)
+
+lcData = `
+{
+    "nombre": "Juan",
+    "apellido": "Gonzalez",
+    "edad": 36
+}
+`
+loData = STRTOJSON(lcData) // bastante simple verdad?
+
+```
+
+- **HTTP Nativo:** las peticiones web serán tan sencillas como esto:
+```Javascript
+lcURL = "https://github.com/Irwin1985/FoxLite/blob/master/README.md"
+?HTTP(lcURL)
+```
