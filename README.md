@@ -188,36 +188,6 @@ Veamos algunas de los aspectos que **FoxLite** no obtendrá de su anscestro:
    numeros = [1, 2, 3]
    frutas = ["Manzana", "Mango", "Mora"]
 ```
-- **Funciones Builtins:** estas son las funciones que un lenguaje tiene integradas en su núcleo y que por lo tanto podemos utilizar en cualquier script. **Visual FoxPro** tiene montones de ellas clasificadas por tipos de datos. Aunque particularmente me gusta trabajar con ellas pienso que es mejor adherirlas a su tipo correspondiente y así *limitar* la cantidad de funciones integradas que **FoxLite** debe cargar en sus hombros. Esto tiene un coste que aún sigo sopesando pero creo que al final me decantaré por este diseño. 
-
-Veamos algunos ejemplos:
-```xBase
-   && Version VFP
-   nombre = "FoxLite   "
-   ?LEN(nombre) && 10
-   ?LEN(ALLTRIM(nombre)) && 7
-```
-El ejemplo anterior está escrito en **Visual FoxPro** y muestra el uso de 2 *funciones integradas*: **ALLTRIM()** y **LEN()** donde la primera trabaja con *Characters* o *String* y la segunda con *números*.
-
-Ahora veamos la versión en **FoxLite**:
-```Javascript
-   // version foxlite
-   nombre = "FoxLite   "
-   ?nombre.len() // 10
-   ?nombre.trim().len() // 7
-```
-Como habrás notado **ALLTRIM()** ha perdido parte de su pelaje y ahora es solo **TRIM()** que es una versión resumida y significa lo mismo, esta nueva versión quizá no te agrade mucho pero es una forma de mantener las funciones integradas adheridas a sus tipos. Es verdad que no previenen los errores porque si invocas la función **trim()** sobre un tipo numérico obtendrás un error de incompatibilidad de tipos pero esto tampoco tiene que ser una desventaja porque para eso existen los [linters](https://es.wikipedia.org/wiki/Lint) que ayudan a detectar errores en tiempo de diseño. De esto no tienes que preocuparte porque un linter se puede desarrollar e incrustar dentro de un editor bien sea propio de **FoxLite** o un tercero como **VsCode, Atom, etc.**
-
-**ALLTRIM()** y **LEN()** son solo el abrebocas de todo el cambio que sufrirán las funciones integradas. Algunas las agradecerás y otras las lamentarás pero es por el bien de FoxLite y su nuevo ecosistema.
-
-**SUBSTR()** está sentenciada a muerte porque lo mismo se puede lograr de la siguiente manera:
-```Javascript
-   // Versión Fox
-   nombre = "FoxLite"
-   ?SUBSTR(nombre, 1, 3) // Fox
-   // Versión FoxLite
-   ?nombre[0:3]
-```
 
 - **Sensibilidad a las Mayúsculas:** está claro que los lenguajes modernos son sensitivos a las mayúsculas así que FoxLite tiene que seguir el mismo estándar, esto no es un capricho sino que más bien es para favorecer la escritura y la legibilidad del código. **Visual FoxPro** es insensible a las mayúsculas y eso tiene sus ventajas pero también es verdad que le resta legibilidad al tener todo el código en mayúsculas *(que suele ser lo más habitual)* lo cual genera pequeños problemas, por ejemplo, siempre escribo en minúsculas pero cuando trabajo con compañeros siempre me terminan formateando el código a mayúsculas con la utilidad **Beautify** y tengo que volver a llevar mi código a minúsculas para que luego me lo vuelvan a reformatear.
 
@@ -235,7 +205,7 @@ No se le puede llamar *lenguaje moderno* sin que tenga características modernas
 
 - **Closures:** esta es quizá una de las características más ambiciosas, se trata de crear funciones dentro de otras funciones. Esto al principio puede ser confuso pero una vez que las conozcan verán el poder que ofrecen.
 
-- **Funciones de alto orden:** esto es basicamente tratar a las funciones como al resto de los tipos de datos, es decir, que se puedan declarar como variables, pasar como argumentos y retornar desde otras funciones.
+- **Funciones de alto orden:** esto es básicamente tratar a las funciones como al resto de los tipos de datos, es decir, que se puedan declarar como variables, pasar como argumentos y retornar desde otras funciones.
 
 - **Diccionarios:** como vimos en la sintaxis de Fox, se pueden crear diccionarios o *Collection* pero son un poco verbosas. **FoxLite** tratará los diccionarios de una forma más fácil y entendible.
 
@@ -321,3 +291,27 @@ loData = STRTOJSON(lcData) // bastante simple verdad?
 lcURL = "https://github.com/Irwin1985/FoxLite/blob/master/README.md"
 ?HTTP(lcURL)
 ```
+
+- **Código Diferido:** es un código que se ejecuta al final de cada bloque de instrucciones de una función.
+
+```Javascript
+func CargarFichero(tcFileName)
+    lnHandle = fopen(tcFileName)
+    defer fclose(lnHandle)
+
+    while !feof(lnHandle)
+        ?fgets(lnHandle)
+    endw
+endf
+```
+
+- **Funciones variadicas:** son las funciones que reciben 1 o más argumentos.
+
+```Javascript
+func Saludar(personas...)
+    for p in personas
+        ?p
+    endf
+endf
+```
+
