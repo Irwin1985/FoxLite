@@ -173,22 +173,22 @@ Lo anterior es apenas una porción de la sintaxis de **Visual FoxPro**, puede ha
 
 **FoxLite** heredará gran parte de la semántica de **FoxPro** pero también es verdad que perderá parte de la sintaxis para favorecer su modernidad.
 
-Veamos algunas de los aspectos que **FoxLite** no obtendrá de su **FoxPro**:
+Veamos algunas de los aspectos que **FoxLite** no obtendrá de **FoxPro**:
 
 ## Limando asperezas en el proceso evolutivo
 
 - **Literales Booleanos:** honestamente **.T.** y **.F.** no me molestan pero he decidido tender una rama hacía el árbol **ALGOL** por lo que ahora serán **true** y **false**. La vieja versión es incluso mejor, ya que escribes menos *(3 letras en lugar de 4)*, pero esto lo hago para que **FoxLite** sea bien visto por la comunidad cuya raíz desde luego parte de **ALGOL**.
 
 ```Javascript
-   verdad = true
-   mentira = false
+   lbVerdad = true
+   lbMentira = false
 ```
 
 - **Literales Arrays:** debo admitir que la sintaxis **DIMENSION arrayName()** nunca me gustó así que esta exclusión es personal *(al igual que todas las demás)* 😋. **FoxLite** adoptará la forma simplista que muchos lenguajes tienen, pero que fue popularizada por **Javascript**.
 
 ```Javascript
-   numeros = [1, 2, 3]
-   frutas = ["Manzana", "Mango", "Mora"]
+   laNumeros = [1, 2, 3]
+   laFrutas = ["Manzana", "Mango", "Mora"]
 ```
 
 - **Sensibilidad a las Mayúsculas:** está claro que los lenguajes modernos son sensitivos a las mayúsculas así que FoxLite tiene que seguir el mismo estándar, esto no es un capricho sino que más bien es para favorecer la escritura y la legibilidad del código. **Visual FoxPro** es insensible a las mayúsculas y eso tiene sus ventajas, pero también es verdad que le resta legibilidad al tener todo el código en mayúsculas *(que suele ser lo más habitual)* lo cual genera pequeños problemas, por ejemplo, siempre escribo en minúsculas, pero cuando trabajo con compañeros siempre me terminan formateando el código a mayúsculas con la utilidad **Beautify** y tengo que volver a llevar mi código a minúsculas para que luego me lo vuelvan a reformatear.
