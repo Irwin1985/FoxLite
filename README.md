@@ -213,11 +213,11 @@ Para ahorrarnos el trabajo de tener que escribir **LOCAL, PRIVATE o PUBLIC** vam
 - El bucle **For** puede saltarse la notación húngara para favorecer la corta declaración de los iteradores.
 ```Javascript
     // Válido pero no recomendado
-    For lcContador = 1 To 10
+    For lcContador = 1 in 10
         ?lcContador
     
     // Bueno
-    For i = 1 To 10
+    For i = 1 in 10
         ?i
 ```
 - Toda variable declarada sin notación húngara será tratada como local.
