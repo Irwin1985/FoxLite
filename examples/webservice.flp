@@ -1,0 +1,23 @@
+/*
+ Realiza una petición via http a "https://jsonplaceholder.typicode.com/todos/1"
+ devuelve la estructura:
+    {
+      "userId": 1,
+      "id": 1,
+      "title": "delectus aut autem",
+      "completed": false
+    }
+*/
+const SUCCESS = 200
+loRequest = Http("https://jsonplaceholder.typicode.com/todos/1")
+If loRequest.StatusCode != SUCCESS
+    ? "Error: ", loRequest.ErrorMessage
+    Return
+
+loJSON = StrToJson(loRequest)
+// Imprime los datos
+? "userId", loJSON.userId
+? "id", loJSON.id
+? "title", loJSON.title
+? "completed", loJSON.completed
+

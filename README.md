@@ -246,6 +246,14 @@ Lo anterior deja en evidencia que en **FoxLite** no habrá declaraciones de vari
     ?"La circunferencia es: ", PI * Sqrt(lnRadio)
 ```
 
+- **Enumerables:** esta es quizá la característica que más echaba de menos en **FoxPro**, siempre tenia que crear un objeto **Empty** para crear mis enumerables, ahora ya eso quedó en el pasado y **FoxLite** nos dará esa comodidad.
+```Javascript
+    Enum Colores [Rojo = 3, Verde = 2, Azul = 1]
+    leColor = Colores.Rojo
+    // le viene de Local Enumerable
+    ? "El color es: ", leColor
+```
+  
 - **Los espacios en blanco importan:** mi meta con **FoxLite** es hacer que se escriba la menor cantidad de código posible, esto lo digo especialmente por aquellas palabras reservadas que todo lenguaje necesita para poder parsear el código. **FoxPro** a mi parecer tiene mucho de esto, sobre todo en las palabras de cierre como **ENDIF, ENDDO, ENDFUNC, ENDCASE, ENDFOR, etc**.
 
 Mi idea es seguir el mismo camino que [**Python**](https://en.wikipedia.org/wiki/Python_syntax_and_semantics) y utilizar la indentación con espacios para eliminar esas palabras que al final nos estorban porque no son código ejecutable sino más bien una guía para el **Parser**.

@@ -1,0 +1,21 @@
+// Diccionarios
+
+liEstudiantes = CreateObject("Collection")
+liEstudiantes["Adama"] = 100
+liEstudiantes["Starbuck"] = 75
+liEstudiantes["Apollo"] = 80
+liEstudiantes["Athena"] = 85
+liEstudiantes["Agathon"] = 90
+
+// Score de Adama
+lnAdamaScore = liEstudiantes["Adama"]
+lnAdamaScore += 100 // Esto no altera el diccionario
+liEstudiantes["Adama"] = lnAdamaScore // Esto si altera el diccionario
+
+If liEstudiantes["Rocky"] != null
+    ? "Rocky también tiene score: ", liEstudiantes["Rocky"]
+
+// Recorrer el diccionario
+For k, v in liEstudiantes
+    ? k, v
+

@@ -1,0 +1,11 @@
+// Operadores lógicos o booleanos
+
+? !false
+? false and true
+? false or true
+? !(false or true)
+? false xor true and true
+? 10 < 5 and 3 > 2
+? 10 >= 15 and !(3 <= 4)
+? 10 == 10
+? 10 != 10

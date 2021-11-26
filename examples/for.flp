@@ -1,0 +1,20 @@
+// Iterador simple
+For i in 10
+    ?i
+
+// Iterar una cadena
+lcCadena = "Esta es una cadena"
+For i in lcCadena
+    ?i
+
+// Iterar un array
+laFrutas = ["Manzanas", "Uvas", "Peras"]
+// Iterar solo valores
+For v in laFrutas
+    ? "Me gusta comer ", v
+
+// Iterar índice y valor
+For i, v in laFrutas
+    ? i, v
+
+

@@ -1,0 +1,6 @@
+// Abrir un fichero
+lcFile = GetFile("c:\", "txt")
+If Empty(lcFile)
+    Return "Fichero inválido"
+
+? ReadFile(lcFile)

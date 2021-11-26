@@ -1,0 +1,10 @@
+// Número par o impar
+
+¿ "Ingresa un número: ", lnNum
+
+lnMod = lnNum % 2
+
+If lnMod > 0
+    ? "Ingresaste un número impar"
+Else
+    ? "Ingresaste un número par"
