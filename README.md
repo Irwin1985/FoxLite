@@ -209,7 +209,7 @@ No se le puede llamar *lenguaje moderno* sin que tenga características modernas
 
 Para ahorrarnos el trabajo de tener que escribir **LOCAL, PRIVATE o PUBLIC** vamos a usar la **Notación Húngara** cómo forma estricta de declaración de variables. Esto quiere decir que habrá un estilo único de escritura en el lenguaje lo cual es fantástico porque favorecerá la legibilidad y uniformidad del código. 
 
-##Excepciones en la Notación Húngara
+## Excepciones en la Notación Húngara
 - El bucle **For** puede saltarse la notación húngara para favorecer la corta declaración de los iteradores.
 ```Javascript
     // Válido pero no recomendado
