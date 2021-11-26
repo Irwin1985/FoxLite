@@ -204,10 +204,27 @@ Los lenguajes modernos incluso vienen con una utilidad integrada para formatear 
 ## Lo nuevo de FoxLite
 
 No se le puede llamar *lenguaje moderno* sin que tenga características modernas verdad?, entonces vamos a ver algunas de las cosas que nos ofrecerá este lenguaje.
-
+ 
 - **Notación Húngara estricta:** esta es quizá la idea más loca que se me ha ocurrido para **FoxLite**, pero si la estudiamos un poco de seguro diremos *"ah, pues claro, tiene sentido"*. Si vienes de **FoxPro** de seguro has visto o usado la [Notación Húngara](https://es.wikipedia.org/wiki/Notaci%C3%B3n_h%C3%BAngara), es aquella forma de declarar los identificadores de un programa según su ámbito y tipo, ejemplo: **lcNombre** donde *l* es de **LOCAL**, *c* es de **Character** y *Nombre* es la descripción del identificador. Entonces *¿Cómo encaja esa notación en **FoxLite**?*
 
-Para ahorrarnos el trabajo de tener que escribir **LOCAL, PRIVATE o PUBLIC** vamos a usar la **Notación Húngara** cómo forma estricta de declaración de variables. Esto quiere decir que habrá un estilo único de escritura en el lenguaje lo cual es fantástico porque favorecerá la legibilidad y uniformidad del código. Veamos un ejemplo:
+Para ahorrarnos el trabajo de tener que escribir **LOCAL, PRIVATE o PUBLIC** vamos a usar la **Notación Húngara** cómo forma estricta de declaración de variables. Esto quiere decir que habrá un estilo único de escritura en el lenguaje lo cual es fantástico porque favorecerá la legibilidad y uniformidad del código. 
+
+##Excepciones en la Notación Húngara
+- El bucle **For** puede saltarse la notación húngara para favorecer la corta declaración de los iteradores.
+```Javascript
+    // Válido pero no recomendado
+    For lcContador = 1 To 10
+        ?lcContador
+    
+    // Bueno
+    For i = 1 To 10
+        ?i
+```
+- Toda variable declarada sin notación húngara será tratada como local.
+  
+- **Declaración de Variables:** gracias a la *Notación Húngara*, las variables no tiene por qué llevar delante las palabras reservadas **LOCAL, PRIVATE o PUBLIC**. El *enlace* se realizará con las primeras 2 letras seguidas de la descripción del identificador.
+
+Veamos unos ejemplos:
 
 ```Javascript
     lcNombre = "Juan" // lo mismo que LOCAL 
@@ -221,19 +238,12 @@ Para ahorrarnos el trabajo de tener que escribir **LOCAL, PRIVATE o PUBLIC** vam
 
 Lo anterior deja en evidencia que en **FoxLite** no habrá declaraciones de variables sin su respectiva asignación, por lo tanto toda variable que declares deberá llevar su respectivo valor para que el enlace interno sepa su ámbito, tipo y valor inicial.
 
-###Excepciones en la Notación Húngara
-- El bucle **For** puede saltarse la notación húngara para favorecer la corta declaración de los iteradores.
-- Toda variable declarada sin notación húngara será tratada como local.
-
+- **Constantes:** **FoxLite** no tendrá *constantes simbólicas* como las tiene Fox y que no estoy pensando en un pre-procesado del código fuente. Lo que si va a tener son *constantes declaradas* y tendrán la siguiente sintaxis.
 
 ```Javascript
-    // Válido pero no recomendado
-    For lcContador = 1 To 10
-        ?lcContador
-    
-    // Bueno
-    For i = 1 To 10
-        ?i
+    const PI = 3.14159265
+    lnRadio = 4
+    ?"La circunferencia es: ", PI * Sqrt(lnRadio)
 ```
 
 - **Los espacios en blanco importan:** mi meta con **FoxLite** es hacer que se escriba la menor cantidad de código posible, esto lo digo especialmente por aquellas palabras reservadas que todo lenguaje necesita para poder parsear el código. **FoxPro** a mi parecer tiene mucho de esto, sobre todo en las palabras de cierre como **ENDIF, ENDDO, ENDFUNC, ENDCASE, ENDFOR, etc**.
