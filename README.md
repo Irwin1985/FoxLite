@@ -238,7 +238,7 @@ Veamos unos ejemplos:
 
 Lo anterior deja en evidencia que en **FoxLite** no habrá declaraciones de variables sin su respectiva asignación, por lo tanto toda variable que declares deberá llevar su respectivo valor para que el enlace interno sepa su ámbito, tipo y valor inicial.
 
-- **Constantes:** **FoxLite** no tendrá *constantes simbólicas* como las tiene Fox y que no estoy pensando en un pre-procesado del código fuente. Lo que si va a tener son *constantes declaradas* y tendrán la siguiente sintaxis.
+- **Constantes:** **FoxLite** no tendrá *constantes simbólicas* como las tiene Fox, ya que no estoy pensando en un **pre-procesado** del código fuente antes de compilar. Lo que si va a tener son *constantes declaradas* y tendrán la siguiente sintaxis.
 
 ```Javascript
     const PI = 3.14159265
