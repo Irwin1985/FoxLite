@@ -2,9 +2,9 @@
 Mis pensamientos acerca del diseño que le daría al lenguage de programación **Foxlite**.
 
 # Introducción
-Hola, mi nombre es Irwin y soy el creador de **FoxLite**, un lenguaje de programación que pretende ser una evolución de Fox. He programado en **Visual FoxPro** durante 12 años y le tengo un gran aprecio pues me ha dado de comer por durante todo este tiempo y lo menos que puedo hacer por él es evolucionarlo. Tal vez no te guste **FoxLite** pero creeme que el diseño que vas a ver aquí es lo más parecido a un **Visual FoxPro** evolucionado, así que comencemos a ver lo que deja, lo que hereda y lo que adquiere. 
+Hola, mi nombre es Irwin y soy el creador de **FoxLite**, un lenguaje de programación que pretende ser una evolución de Fox. He programado en **Visual FoxPro** durante 12 años y le tengo un gran aprecio pues me ha dado de comer por durante todo este tiempo y lo menos que puedo hacer por él es evolucionarlo. Tal vez no te guste **FoxLite**, pero créeme que el diseño que vas a ver aquí es lo más parecido a un **Visual FoxPro** evolucionado, así que comencemos a ver lo que deja, lo que hereda y lo que mejora. 
 
-Este diseño es meramente subjetivo así que la evolución de **Fox** está en mi mano pero no te preocupes porque conozco la gramática de **Fox** y la gramática de los lenguajes *"modernos"* por lo tanto me aseguraré que sus nuevos poderes lo ayuden a sobrevir en este nuevo ecosistema.
+Este diseño es meramente subjetivo así que la evolución de **Fox** está en mi mano, pero no te preocupes porque conozco la gramática de **Fox** y la gramática de los lenguajes *"modernos"* por lo tanto me aseguraré que sus nuevos poderes lo ayuden a sobrevivir en este nuevo ecosistema.
 
 ## Un repaso a Visual FoxPro
 Comencemos viendo un trozo de sintaxis de **Visual FoxPro**
@@ -169,45 +169,129 @@ oJuan = CREATEOBJECT("Persona")
 ?oJuan.Presentarse()
 ```
 
-Lo anterior es apenas una porción de la sintaxis de **Visual FoxPro**, puede hacer más cosas pero ustedes son **Foxeros** así que ya tienen una idea de lo que es capaz de hacer.
+Lo anterior es apenas una porción de la sintaxis de **Visual FoxPro**, puede hacer más cosas, pero ustedes son **Foxeros** así que ya tienen una idea de lo que es capaz de hacer.
 
 **FoxLite** heredará gran parte de la semántica de **FoxPro** pero también es verdad que perderá parte de la sintaxis para favorecer su modernidad.
 
-Veamos algunas de los aspectos que **FoxLite** no obtendrá de su anscestro:
+Veamos algunas de los aspectos que **FoxLite** no obtendrá de su **FoxPro**:
 
 ## Limando asperezas en el proceso evolutivo
 
-- **Literales Booleanos:** honestamente **.T.** y **.F.** no me molestan pero he decidido tender una rama hacía el árbol **ALGOL** por lo que ahora serán **true** y **false**. La vieja versión es incluso mejor ya que escribes menos *(3 letras en lugar de 4)* pero esto lo hago para que **FoxLite** sea bien visto por la comunidad cuya raíz desde luego parte de **ALGOL**.
+- **Literales Booleanos:** honestamente **.T.** y **.F.** no me molestan pero he decidido tender una rama hacía el árbol **ALGOL** por lo que ahora serán **true** y **false**. La vieja versión es incluso mejor, ya que escribes menos *(3 letras en lugar de 4)*, pero esto lo hago para que **FoxLite** sea bien visto por la comunidad cuya raíz desde luego parte de **ALGOL**.
+
 ```Javascript
    verdad = true
    mentira = false
 ```
-- **Literales Arrays:** debo admitir que la sintaxis **DIMENSION arrayName()** nunca me gustó así que esta exclusión es personal *(al igual que todas las demás)* 😋. **FoxLite** adoptará la forma simplística que muchos lenguajes tienen pero que fue popularizada por **Javascript**.
+
+- **Literales Arrays:** debo admitir que la sintaxis **DIMENSION arrayName()** nunca me gustó así que esta exclusión es personal *(al igual que todas las demás)* 😋. **FoxLite** adoptará la forma simplista que muchos lenguajes tienen, pero que fue popularizada por **Javascript**.
 
 ```Javascript
    numeros = [1, 2, 3]
    frutas = ["Manzana", "Mango", "Mora"]
 ```
 
-- **Sensibilidad a las Mayúsculas:** está claro que los lenguajes modernos son sensitivos a las mayúsculas así que FoxLite tiene que seguir el mismo estándar, esto no es un capricho sino que más bien es para favorecer la escritura y la legibilidad del código. **Visual FoxPro** es insensible a las mayúsculas y eso tiene sus ventajas pero también es verdad que le resta legibilidad al tener todo el código en mayúsculas *(que suele ser lo más habitual)* lo cual genera pequeños problemas, por ejemplo, siempre escribo en minúsculas pero cuando trabajo con compañeros siempre me terminan formateando el código a mayúsculas con la utilidad **Beautify** y tengo que volver a llevar mi código a minúsculas para que luego me lo vuelvan a reformatear.
+- **Sensibilidad a las Mayúsculas:** está claro que los lenguajes modernos son sensitivos a las mayúsculas así que FoxLite tiene que seguir el mismo estándar, esto no es un capricho sino que más bien es para favorecer la escritura y la legibilidad del código. **Visual FoxPro** es insensible a las mayúsculas y eso tiene sus ventajas, pero también es verdad que le resta legibilidad al tener todo el código en mayúsculas *(que suele ser lo más habitual)* lo cual genera pequeños problemas, por ejemplo, siempre escribo en minúsculas, pero cuando trabajo con compañeros siempre me terminan formateando el código a mayúsculas con la utilidad **Beautify** y tengo que volver a llevar mi código a minúsculas para que luego me lo vuelvan a reformatear.
 
-Los lenguajes modernos incluso vienen con una utilidad integrada para formatear el código fuente, cosa que me parece estupenda y la tendré en mente para incluirsela a **FoxLite** en su versión Consola.
+Los lenguajes modernos incluso vienen con una utilidad integrada para formatear el código fuente, cosa que me parece estupenda y la tendré en mente para incluírsela a **FoxLite** en su versión **Consola**.
 
+- **Procedimientos:** los procedures serán remplazados por las funciones, ya que nosotros los usamos indistintamente en **FoxPro**, ahora en **FoxLite** quiero dejar solo las funciones y otra cosa muy importante es que toda función retorna un valor implícita o explícitamente, la forma implícita es la última expresión de su bloque que será retornada, la forma explícita desde luego es con la palabra reservada **return**.
 
-- **Procedimientos:** los procedures serán remplazados por las funciones.
+- **String multilínea con TEXT/TO:** aunque particularmente me gusta usarlo, el **TEXT TO** será remplazado por una versión más simplista inspirada por [vLang](https://vlang.io/).
 
-- **String multilínea con TEXT/TO:** aunque particularmente me gusta usarlo, el text to será remplazado por una versión más simplista inspirada por [vLang](https://vlang.io/).
-
+- **Comentarios:** los comentarios en **FoxPro** tampoco me gustaron mucho así que **FoxLite** tendrá otros símbolos para los comentarios.
 
 ## Lo nuevo de FoxLite
 
 No se le puede llamar *lenguaje moderno* sin que tenga características modernas verdad?, entonces vamos a ver algunas de las cosas que nos ofrecerá este lenguaje.
 
-- **Closures:** esta es quizá una de las características más ambiciosas, se trata de crear funciones dentro de otras funciones. Esto al principio puede ser confuso pero una vez que las conozcan verán el poder que ofrecen.
+- **Notación Húngara estricta:** esta es quizá la idea más loca que se me ha ocurrido para **FoxLite**, pero si la estudiamos un poco de seguro diremos *"ah, pues claro, tiene sentido"*. Si vienes de **FoxPro** de seguro has visto o usado la [Notación Húngara](https://es.wikipedia.org/wiki/Notaci%C3%B3n_h%C3%BAngara), es aquella forma de declarar los identificadores de un programa según su ámbito y tipo, ejemplo: **lcNombre** donde *l* es de **LOCAL**, *c* es de **Character** y *Nombre* es la descripción del identificador. Entonces *¿Cómo encaja esa notación en **FoxLite**?*
+
+Para ahorrarnos el trabajo de tener que escribir **LOCAL, PRIVATE o PUBLIC** vamos a usar la **Notación Húngara** cómo forma estricta de declaración de variables. Esto quiere decir que habrá un estilo único de escritura en el lenguaje lo cual es fantástico porque favorecerá la legibilidad y uniformidad del código. Veamos un ejemplo:
+
+```Javascript
+    lcNombre = "Juan" // lo mismo que LOCAL 
+    pnSaldo = 3.000 // lo mismo que PRIVATE
+    glConfigFile = "c:\Congif.json" // lo mismo que PUBLIC
+    
+    // Para el caso de parámetros
+    Func Sumar(tnNumero1, tnNumero2)
+        Return tnNumero1 + tnNumero2
+```
+
+Lo anterior deja en evidencia que en **FoxLite** no habrá declaraciones de variables sin su respectiva asignación, por lo tanto toda variable que declares deberá llevar su respectivo valor para que el enlace interno sepa su ámbito, tipo y valor inicial.
+
+###Excepciones en la Notación Húngara
+- El bucle **For** puede saltarse la notación húngara para favorecer la corta declaración de los iteradores.
+- Toda variable declarada sin notación húngara será tratada como local.
+
+
+```Javascript
+    // Válido pero no recomendado
+    For lcContador = 1 To 10
+        ?lcContador
+    
+    // Bueno
+    For i = 1 To 10
+        ?i
+```
+
+- **Los espacios en blanco importan:** mi meta con **FoxLite** es hacer que se escriba la menor cantidad de código posible, esto lo digo especialmente por aquellas palabras reservadas que todo lenguaje necesita para poder parsear el código. **FoxPro** a mi parecer tiene mucho de esto, sobre todo en las palabras de cierre como **ENDIF, ENDDO, ENDFUNC, ENDCASE, ENDFOR, etc**.
+
+Mi idea es seguir el mismo camino que [**Python**](https://en.wikipedia.org/wiki/Python_syntax_and_semantics) y utilizar la indentación con espacios para eliminar esas palabras que al final nos estorban porque no son código ejecutable sino más bien una guía para el **Parser**.
+
+- **Estilo de escritura en CamelCase:** para acompañar el estilo húngaro, el código de **FoxLite** tanto para *identificadores* como *palabras reservadas*, seguirá el estilo [Camel Case](https://es.wikipedia.org/wiki/Camel_case) el cual consiste en elevar a mayúsculas la primera letra del identificador, sobre todo para las descripciones compuestas en cuyo caso cada primera letra se debe elevar a mayúsculas también.
+
+```Javascript
+    liEmpleado = CreateObject("Collection")
+    liEmpleado["nombre"] = "Juan"
+    liEmpleado["salario"] = 3.500
+    liEmpleado["horario"] = ["Lunes", "Miercoles", "Viernes"]
+    
+    // Imprimir los datos de un diccionario
+    Func ImprimeEmpleado(tiEmpleado)
+        For k, v in tiEmpleado
+            ?k, v
+```
+
+- **Funciones:** aunque técnicamente las funciones no son nuevas porque **FoxPro** también las tiene, en **FoxLite** serán tratadas como [ciudadanas de primera clase](https://en.wikipedia.org/wiki/First-class_function).
+
+Veamos algunos ejemplos:
+
+- **Closures:** esta es quizá una de las características más ambiciosas, se trata de crear funciones dentro de otras funciones. Esto al principio puede ser confuso, pero una vez que las conozcan verán el poder que pueden ofrecer.
+
+```Javascript
+    // Función externa
+    Func HolaMundo()
+        pcSaludo = "Hola"
+        // Función interna (closure)
+        Func DecirMundo()
+            Return pcSaludo + " Mundo!"
+        Return DecirMundo
+    // Invocar la función
+    ?HolaMundo() // Imprime => "Hola Mundo!"
+```
 
 - **Funciones de alto orden:** esto es básicamente tratar a las funciones como al resto de los tipos de datos, es decir, que se puedan declarar como variables, pasar como argumentos y retornar desde otras funciones.
 
-- **Diccionarios:** como vimos en la sintaxis de Fox, se pueden crear diccionarios o *Collection* pero son un poco verbosas. **FoxLite** tratará los diccionarios de una forma más fácil y entendible.
+```Javascript
+    // Eleva al cuadrado
+    Func Cuadrado(tnNum)
+        Return tnNum * tnNum
+
+    // Eleva al cubo (recibe una función)
+    Func Cubo(tnNum, tfCuadrado)
+        Return tnNum * tfCuadrado(tnNum)
+
+    // Invocar la función
+    ?Cubo(3) // 27
+    
+    // Asignar una función a una variable
+    lfCuadrado = Cuadrado()
+    ?lfCuadrado(2) // 4
+```
+
+- **Diccionarios:** como vimos en la sintaxis de **FoxPro**, se pueden crear diccionarios o *Collection*, pero son un poco verbosas. **FoxLite** tratará los diccionarios de una forma más fácil y entendible.
 
 ```Javascript
 // declarar el diccionario
@@ -222,32 +306,34 @@ datos["casado"] = false
 ?datos["casado"]
 ```
 
-- **Arrays:** los arrays también cambiarán su estructura a la forma moderna y creo que la mejor parte con respecto a los arrays de **FoxPro** es que se podrán retornar desde las funciones.
+El ejemplo anterior nos revela que la creación de objetos a través del builtin **CreateObject** se mantendrá vigente.
+
+- **Arrays:** los arrays también cambiarán su estructura a la forma moderna y creo que la mejor parte con respecto a los arrays de **FoxPro** es que también serán tratados como ciudadanos de primera clase.
 
 ```Javascript
 // declarar el array
-frutas = ["Manzana", "Mango", "Melocotón"]
+laFrutas = ["Manzana", "Mango", "Melocotón"]
 
 // imprimir el array
-?frutas[0]
-?frutas[1]
-?frutas[2]
+?laFrutas[0]
+?laFrutas[1]
+?laFrutas[2]
 ```
 
-- **String Multilínea:** un string se delimita por sus comillas simples o dobles pero también existe otro delimitador llamado *backtick*, veamos un ejemplo:
+- **String Multilínea:** un string se delimita por sus comillas simples o dobles, pero también existe otro delimitador llamado **backtick**, veamos un ejemplo:
 
 ```Javascript
-a = 'string 
+lcString1 = 'string 
 con
 comillas 
 simples'
 
-b = "string
+lcString2 = "string
 con
 comillas
 dobles"
 
-c = `string
+lcString3 = `string
 con
 el
 delimitador
@@ -258,22 +344,22 @@ backtick
 - **Interpolación de string:** también se solía hacer con TEXT TO usando los dobles ángulos ```<<variable>>``` pero ahora se hará de una manera más sencilla.
 
 ```Javascript
-nombre = "juan"
-apellido = "perez"
-? "Hola, mi nombre es $nombre y mi apellido $apellido."
+lcNombre = "juan"
+lcApellido = "perez"
+? "Hola, mi nombre es $lcNombre y mi apellido $lcApellido."
 ```
 
-- **JSON Nativo:** con dos funciones nativas ya podremos serializar y deserializar objetos JSON.
+- **JSON Nativo:** con dos funciones nativas ya podremos serializar y deserializar objetos.
 
 ```Javascript
 // declarar el diccionario
-datos = createobject("Collection")
-datos["nombre"] = "Juan"
-datos["edad"] = 36
-datos["casado"] = false
+liDatos = CreateObject("Collection")
+liDatos["nombre"] = "Juan"
+liDatos["edad"] = 36
+liDatos["casado"] = false
 
 // convertir a string JSON 
-?JSONTOSTR(datos)
+?JsonToStr(liDatos)
 
 lcData = `
 {
@@ -282,36 +368,33 @@ lcData = `
     "edad": 36
 }
 `
-loData = STRTOJSON(lcData) // bastante simple verdad?
+loData = StrToJson(lcData) // bastante simple verdad?
 
 ```
 
 - **HTTP Nativo:** las peticiones web serán tan sencillas como esto:
 ```Javascript
 lcURL = "https://github.com/Irwin1985/FoxLite/blob/master/README.md"
-?HTTP(lcURL)
+?Http(lcURL)
 ```
 
 - **Código Diferido:** es un código que se ejecuta al final de cada bloque de instrucciones de una función.
 
 ```Javascript
-func CargarFichero(tcFileName)
-    lnHandle = fopen(tcFileName)
-    defer fclose(lnHandle)
+Func CargarFichero(tcFileName)
+    lnHandle = fOpen(tcFileName)
+    defer 
+        fClose(lnHandle)
 
-    while !feof(lnHandle)
-        ?fgets(lnHandle)
-    endw
-endf
+    while !fEof(lnHandle)
+        ?fGets(lnHandle)
 ```
 
-- **Funciones variadicas:** son las funciones que reciben 1 o más argumentos.
+- **Funciones variádicas:** son las funciones que reciben 1 o más argumentos.
 
 ```Javascript
-func Saludar(personas...)
-    for p in personas
+Func Saludar(taPersonas...)
+    for p in taPersonas
         ?p
-    endf
-endf
 ```
 
