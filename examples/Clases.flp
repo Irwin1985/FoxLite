@@ -1,0 +1,16 @@
+// Primera idea del diseño pero aún no decido.
+Class Persona
+    Nombre = ""
+    Apellido = ""
+    Edad = ""
+    Persona(tcNombre, tcApellido, tnEdad)
+        Nombre = tcNombre
+        Apellido = tcApellido
+        Edad = tnEdad
+
+    Saludar()
+        Return Fmt("Hola, soy $Nombre $Apellido")
+
+Class Gonzalo As Persona
+    Saludar()
+        DoDefault()

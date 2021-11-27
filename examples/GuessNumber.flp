@@ -1,0 +1,6 @@
+lnSecret, lnGuess = Rand(1, 10), 0
+lnGuess = int(¿ "Ingresa un número del 1 al 10: ")
+While lnSecret != lnGuess
+    lnGuess = int(¿ "Inténtalo otra vez: ")
+
+? "Genial, has adivinado!"

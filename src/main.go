@@ -1,9 +1,9 @@
 package main
 
 import (
+	"FoxLite/src/lexer"
 	"FoxLite/src/repl"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -35,12 +35,9 @@ func main() {
 }
 
 func runFile(fileName string) {
-	source, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		fmt.Printf("error: could not read the file '%s'\n", fileName)
-		os.Exit(1)
-	}
-	fmt.Println(string(source))
+	l := lexer.New()
+	l.ScanFile(fileName)
+	repl.Execute(l)
 }
 
 func runPrompt() {

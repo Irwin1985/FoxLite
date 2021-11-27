@@ -220,7 +220,7 @@ Para ahorrarnos el trabajo de tener que escribir **LOCAL, PRIVATE o PUBLIC** vam
     For i = 1 in 10
         ?i
 ```
-- Toda variable declarada sin notación húngara será tratada como local.
+- **Toda variable declarada sin notación húngara será tratada como local.**
   
 - **Declaración de Variables:** gracias a la *Notación Húngara*, las variables no tiene por qué llevar delante las palabras reservadas **LOCAL, PRIVATE o PUBLIC**. El *enlace* se realizará con las primeras 2 letras seguidas de la descripción del identificador.
 
@@ -246,7 +246,7 @@ Lo anterior deja en evidencia que en **FoxLite** no habrá declaraciones de vari
     ?"La circunferencia es: ", PI * Sqrt(lnRadio)
 ```
 
-- **Enumerables:** esta es quizá la característica que más echaba de menos en **FoxPro**, siempre tenia que crear un objeto **Empty** para crear mis enumerables, ahora ya eso quedó en el pasado y **FoxLite** nos dará esa comodidad.
+- **Enumerables:** esta es quizá la característica que más echaba de menos en **FoxPro**, siempre tenía que crear un objeto **Empty** para crear mis enumerables, ahora ya eso quedó en el pasado y **FoxLite** nos dará esa comodidad.
 ```Javascript
     Enum Colores [Rojo = 3, Verde = 2, Azul = 1]
     leColor = Colores.Rojo

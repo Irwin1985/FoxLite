@@ -1,6 +1,8 @@
 package repl
 
 import (
+	"FoxLite/src/lexer"
+	"FoxLite/src/token"
 	"bufio"
 	"fmt"
 	"io"
@@ -27,7 +29,9 @@ func Start(in io.Reader, _ io.Writer) {
 		if input == "quit" {
 			break
 		}
-		fmt.Printf("no, tu eres un: %s\n", input)
+		l := lexer.New()
+		l.ScanText([]rune(input))
+		Execute(l)
 	}
 }
 
@@ -35,4 +39,14 @@ func displayWelcome() {
 	fmt.Printf("Welcome to Foxlite programming language, version %s\n", VERSION)
 	fmt.Printf("Data and Time %s\n", time.Now().Format(time.Stamp))
 	fmt.Printf("Type \"quit\" to exit or \"help\" for more information.\n")
+}
+
+func Execute(l *lexer.Lexer) {
+	tok := l.NextToken()
+	for tok.Type != token.Eof {
+		fmt.Println(tok.Str())
+		tok = l.NextToken()
+	}
+	fmt.Println(tok.Str())
+	//fmt.Println(color.Green + "policia execute 2!" + color.Reset)
 }

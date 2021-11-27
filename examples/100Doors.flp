@@ -1,0 +1,7 @@
+laPuertas = [false] * 100 // crea un array de 100 espacios
+For i in 100
+    For j=i To 100 Step i+1
+        laPuertas[j] = !laPuertas[j]
+
+
+
