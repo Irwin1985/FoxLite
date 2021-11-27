@@ -25,7 +25,7 @@ type Lexer struct {
 func New() *Lexer {
 	l := &Lexer{
 		symbol:  map[string]token.TokenType{},
-		symbols: "+-*/^%",
+		symbols: "+-*/^%=()[],¿?!<>",
 		line:    1,
 		col:     0,
 	}
@@ -40,8 +40,23 @@ func New() *Lexer {
 	l.symbol["*="] = token.MulEq
 	l.symbol["/"] = token.Div
 	l.symbol["/="] = token.DivEq
+	l.symbol["="] = token.Assign
+	l.symbol["=="] = token.Equal
+	l.symbol["!="] = token.NotEq
 	l.symbol["^"] = token.Pow
 	l.symbol["%"] = token.Mod
+	l.symbol["("] = token.Lparen
+	l.symbol[")"] = token.Rparen
+	l.symbol[","] = token.Comma
+	l.symbol["["] = token.Lbracket
+	l.symbol["]"] = token.Rbracket
+	l.symbol["¿"] = token.OpenQM
+	l.symbol["?"] = token.CloseQM
+	l.symbol["!"] = token.Not
+	l.symbol["<"] = token.Less
+	l.symbol["<="] = token.LessEq
+	l.symbol[">"] = token.Greater
+	l.symbol[">="] = token.GreaterEq
 
 	return l
 }
@@ -128,15 +143,21 @@ func (l *Lexer) NextToken() token.Token {
 					l.advance() // avanza el símbolo
 					tok = l.newToken(t, key)
 				} else {
-					l.printError("invalid character literal.")
+					l.printError(fmt.Sprintf("invalid character literal [%s]", string(l.ch)))
 				}
 			}
 		} else if isDigit(l.ch) {
 			lit := l.readNumber()
 			tok = l.newToken(token.Number, lit)
+		} else if isIdent(l.ch) {
+			lit := l.readIdent()
+			tok = l.newToken(token.LookupIdent(lit), lit)
+		} else if isString(l.ch) {
+			tok = l.newToken(token.String, l.readString())
 		} else {
+			ch := string(l.ch)
 			l.advance()
-			l.printError("invalid character literal.")
+			l.printError(fmt.Sprintf("invalid character literal [%s]", ch))
 		}
 	}
 	return tok
@@ -145,6 +166,31 @@ func (l *Lexer) NextToken() token.Token {
 func (l *Lexer) readNumber() string {
 	pos := l.pos
 	for isDigit(l.ch) {
+		l.advance()
+	}
+	return string(l.input[pos:l.pos])
+}
+
+func (l *Lexer) readString() string {
+	end := l.ch
+	pos := l.pos + 1
+	for {
+		l.advance()
+		if l.ch == end || l.isAtEnd() {
+			break
+		}
+	}
+	if l.isAtEnd() {
+		l.printError("unfinished string literal")
+	}
+	str := string(l.input[pos:l.pos])
+	l.advance() // avanza el cierre del string
+	return str
+}
+
+func (l *Lexer) readIdent() string {
+	pos := l.pos
+	for isLetter(l.ch) {
 		l.advance()
 	}
 	return string(l.input[pos:l.pos])
@@ -177,6 +223,14 @@ func isIdent(ch rune) bool {
 
 func (l *Lexer) isSymbol(ch rune) bool {
 	return strings.Contains(l.symbols, string(ch))
+}
+
+func isString(ch rune) bool {
+	return ch == '"' || ch == '\'' || ch == '`'
+}
+
+func (l *Lexer) isAtEnd() bool {
+	return l.ch == rune(0)
 }
 
 func (l *Lexer) printError(msg string) {

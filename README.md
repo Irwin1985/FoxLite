@@ -177,11 +177,11 @@ Veamos algunas de los aspectos que **FoxLite** no obtendrá de **FoxPro**:
 
 ## Limando asperezas en el proceso evolutivo
 
-- **Literales Booleanos:** honestamente **.T.** y **.F.** no me molestan pero he decidido tender una rama hacía el árbol **ALGOL** por lo que ahora serán **true** y **false**. La vieja versión es incluso mejor, ya que escribes menos *(3 letras en lugar de 4)*, pero esto lo hago para que **FoxLite** sea bien visto por la comunidad cuya raíz desde luego parte de **ALGOL**.
+- **Literales Booleanos:** honestamente **.T.** y **.F.** no me molestan pero he decidido tender una rama hacía el árbol **ALGOL** por lo que ahora serán **True** y **False**. La vieja versión es incluso mejor, ya que escribes menos *(3 letras en lugar de 4)*, pero esto lo hago para que **FoxLite** sea bien visto por la comunidad cuya raíz desde luego parte de **ALGOL**.
 
 ```Javascript
-   lbVerdad = true
-   lbMentira = false
+   lbVerdad = True
+   lbMentira = False
 ```
 
 - **Literales Arrays:** debo admitir que la sintaxis **DIMENSION arrayName()** nunca me gustó así que esta exclusión es personal *(al igual que todas las demás)* 😋. **FoxLite** adoptará la forma simplista que muchos lenguajes tienen, pero que fue popularizada por **Javascript**.
@@ -316,7 +316,7 @@ Veamos algunos ejemplos:
 datos = createobject("Collection")
 datos["nombre"] = "Juan"
 datos["edad"] = 36
-datos["casado"] = false
+datos["casado"] = False
 
 // imprimir los datos
 ?datos["nombre"]
@@ -374,7 +374,7 @@ lcApellido = "perez"
 liDatos = CreateObject("Collection")
 liDatos["nombre"] = "Juan"
 liDatos["edad"] = 36
-liDatos["casado"] = false
+liDatos["casado"] = False
 
 // convertir a string JSON 
 ?JsonToStr(liDatos)
