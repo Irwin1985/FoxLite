@@ -17,19 +17,20 @@ type Lexer struct {
 	ch        rune
 	line      int
 	col       int
-	prevToken token.Token
+	prevToken token.TokenType
 	symbol    map[string]token.TokenType
 	symbols   string
 }
 
 func New() *Lexer {
 	l := &Lexer{
-		symbol:  map[string]token.TokenType{},
-		symbols: "+-*/^%=()[],¿?!<>",
-		line:    1,
-		col:     0,
+		symbol:   map[string]token.TokenType{},
+		symbols:  "+-*/^%=()[],¿?!<>.",
+		line:     1,
+		col:      0,
+		fileName: "",
 	}
-	l.prevToken = l.newToken(token.NewLine, "")
+	l.prevToken = token.NewLine
 
 	// Rellenamos los símbolos
 	l.symbol["+"] = token.Plus
@@ -57,18 +58,19 @@ func New() *Lexer {
 	l.symbol["<="] = token.LessEq
 	l.symbol[">"] = token.Greater
 	l.symbol[">="] = token.GreaterEq
+	l.symbol["."] = token.Dot
 
 	return l
 }
 
-func (l *Lexer) newToken(tok token.TokenType, lit string) token.Token {
+func (l *Lexer) newToken(ttype token.TokenType, lit string) token.Token {
 	var t = token.Token{
-		Type:    tok,
+		Type:    ttype,
 		Literal: lit,
 		Col:     l.col,
 		Line:    l.line,
 	}
-	l.prevToken = t
+	l.prevToken = ttype
 	return t
 }
 
@@ -115,118 +117,78 @@ func (l *Lexer) peek() rune {
 }
 
 func (l *Lexer) NextToken() token.Token {
-	var tok token.Token
+	for l.ch != rune(0) {
+		// ignorar espacios en blanco
+		if isSpace(l.ch) {
+			l.skipWhitespace()
+			continue
+		} // isSpace(l.ch)
 
-	l.skipWhitespace() // Ignora todos los espacios en blanco
+		// ignorar comentarios
+		if l.isComment() {
+			l.skipComments()
+			continue
+		} // l.isComment()
 
-	switch l.ch {
-	case '\n':
-		l.advance()
-		tok = l.newToken(token.NewLine, "")
-	case rune(0):
-		if l.prevToken.Type != token.NewLine {
-			tok = l.newToken(token.NewLine, "")
-		} else {
-			tok = l.newToken(token.Eof, "")
-		}
-	default:
+		// identificadores
+		if isLetter(l.ch) {
+			lit := l.readIdent()
+			return l.newToken(token.LookupIdent(lit), lit)
+		} // isIdent(l.ch)
+
+		// números
+		if isDigit(l.ch) {
+			lit := l.readNumber()
+			return l.newToken(token.Number, lit)
+		} // isDigit(l.ch)
+
+		// string
+		if isString(l.ch) {
+			return l.newToken(token.String, l.readString())
+		} // isString(l.ch)
+
+		// salto de línea
+		if l.ch == '\n' {
+			l.advance()
+			return l.newToken(token.NewLine, "")
+		} // l.ch == '\n'
+
+		// caracteres especiales
 		if l.isSymbol(l.ch) {
 			peek := l.peek()
 			key := string(l.ch) + string(peek)
 			if t, ok := l.symbol[key]; ok { // Es un símbolo doble?
 				l.advance() // avanza el primer símbolo
 				l.advance() // avanza el segundo
-				tok = l.newToken(t, key)
+				return l.newToken(t, key)
 			} else {
 				key = string(l.ch)
 				if t, ok := l.symbol[key]; ok { // Es un símbolo sencillo?
 					l.advance() // avanza el símbolo
-					tok = l.newToken(t, key)
+					return l.newToken(t, key)
 				} else {
 					l.printError(fmt.Sprintf("invalid character literal [%s]", string(l.ch)))
-				}
-			}
-		} else if isDigit(l.ch) {
-			lit := l.readNumber()
-			tok = l.newToken(token.Number, lit)
-		} else if isIdent(l.ch) {
-			lit := l.readIdent()
-			tok = l.newToken(token.LookupIdent(lit), lit)
-		} else if isString(l.ch) {
-			tok = l.newToken(token.String, l.readString())
-		} else {
-			ch := string(l.ch)
-			l.advance()
-			l.printError(fmt.Sprintf("invalid character literal [%s]", ch))
-		}
-	}
-	return tok
-}
-
-func (l *Lexer) readNumber() string {
-	pos := l.pos
-	for isDigit(l.ch) {
+				} // t, ok := l.symbol[key]; ok
+			} // t, ok := l.symbol[key]; ok
+		} // l.isSymbol(l.ch)
+		tok := l.newToken(token.Illegal, string(l.ch))
 		l.advance()
+		return tok
+	} // for l.ch != rune(0)
+	// es EOF
+	if l.prevToken != token.NewLine {
+		return l.newToken(token.NewLine, "")
+	} else {
+		return l.newToken(token.Eof, "")
 	}
-	return string(l.input[pos:l.pos])
-}
-
-func (l *Lexer) readString() string {
-	end := l.ch
-	pos := l.pos + 1
-	for {
-		l.advance()
-		if l.ch == end || l.isAtEnd() {
-			break
-		}
-	}
-	if l.isAtEnd() {
-		l.printError("unfinished string literal")
-	}
-	str := string(l.input[pos:l.pos])
-	l.advance() // avanza el cierre del string
-	return str
-}
-
-func (l *Lexer) readIdent() string {
-	pos := l.pos
-	for isLetter(l.ch) {
-		l.advance()
-	}
-	return string(l.input[pos:l.pos])
-}
-
-func (l *Lexer) skipWhitespace() {
-	for isSpace(l.ch) {
-		if l.ch == '\n' && l.prevToken.Type != token.NewLine {
-			break
-		}
-		l.advance()
-	}
-}
-
-func isSpace(ch rune) bool {
-	return ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t'
-}
-
-func isDigit(ch rune) bool {
-	return '0' <= ch && ch <= '9'
 }
 
 func isLetter(ch rune) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z'
-}
-
-func isIdent(ch rune) bool {
-	return isLetter(ch) || isDigit(ch) || ch == '_'
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
 func (l *Lexer) isSymbol(ch rune) bool {
 	return strings.Contains(l.symbols, string(ch))
-}
-
-func isString(ch rune) bool {
-	return ch == '"' || ch == '\'' || ch == '`'
 }
 
 func (l *Lexer) isAtEnd() bool {
@@ -239,4 +201,19 @@ func (l *Lexer) printError(msg string) {
 	}
 	fmt.Println(msg)
 	os.Exit(1)
+}
+
+func (l *Lexer) GetFileName() string {
+	return l.fileName
+}
+
+func (l *Lexer) GetErrorFormat(t *token.Token) string {
+	lincol := ""
+	if t != nil {
+		lincol = fmt.Sprintf("%d:%d", t.Line, t.Col)
+	}
+	if l.scanMode == 'f' {
+		return fmt.Sprintf("%s:%s: error:", l.fileName, lincol)
+	}
+	return fmt.Sprintf("[%s]: error:", lincol)
 }

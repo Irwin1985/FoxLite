@@ -42,12 +42,14 @@ const (
 	Comma    // ,
 	OpenQM   // ¿
 	CloseQM  // ?
+	Dot      // .
 
 	// Palabras reservadas
 	Function
 	Return
 	True
 	False
+	Null
 	And
 	Or
 	CreateObject
@@ -94,12 +96,14 @@ var tokenDesc = []string{
 	"Comma",    // ,
 	"OpenQM",   // ¿
 	"CloseQM",  // ?
+	"Dot",      // .
 
 	// Palabras reservadas
 	"Function",
 	"Return",
 	"True",
 	"False",
+	"Null",
 	"and",
 	"or",
 	"CreateObject",
@@ -112,6 +116,7 @@ var keywords = map[string]TokenType{
 	"Return":       Return,
 	"True":         True,
 	"False":        False,
+	"Null":         Null,
 	"and":          And,
 	"or":           Or,
 	"CreateObject": CreateObject,
@@ -135,4 +140,8 @@ func LookupIdent(ident string) TokenType {
 		return tok
 	}
 	return Ident
+}
+
+func GetTokenStr(t TokenType) string {
+	return tokenDesc[t]
 }
