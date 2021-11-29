@@ -8,7 +8,7 @@ import (
 
 func (p *Parser) parseLiteral() ast.Expression {
 	exp := &ast.Literal{
-		Token: p.curToken.Type,
+		Token: p.curToken,
 	}
 	switch p.curToken.Type {
 	case token.Number:

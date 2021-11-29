@@ -10,6 +10,9 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.Return:
 		return p.parseReturnStmt()
 	default:
+		if p.match(token.Ident) && p.peekToken.Type == token.Assign {
+			return p.parseVarStmt()
+		}
 		return p.parseExpressionStmt()
 	}
 }

@@ -63,11 +63,11 @@ func New() *Lexer {
 	return l
 }
 
-func (l *Lexer) newToken(ttype token.TokenType, lit string) token.Token {
+func (l *Lexer) newToken(ttype token.TokenType, lit string, col int) token.Token {
 	var t = token.Token{
 		Type:    ttype,
 		Literal: lit,
-		Col:     l.col,
+		Col:     col,
 		Line:    l.line,
 	}
 	l.prevToken = ttype
@@ -132,25 +132,29 @@ func (l *Lexer) NextToken() token.Token {
 
 		// identificadores
 		if isLetter(l.ch) {
+			col := l.col
 			lit := l.readIdent()
-			return l.newToken(token.LookupIdent(lit), lit)
+			return l.newToken(token.LookupIdent(lit), lit, col)
 		} // isIdent(l.ch)
 
 		// números
 		if isDigit(l.ch) {
+			col := l.col
 			lit := l.readNumber()
-			return l.newToken(token.Number, lit)
+			return l.newToken(token.Number, lit, col)
 		} // isDigit(l.ch)
 
 		// string
 		if isString(l.ch) {
-			return l.newToken(token.String, l.readString())
+			col := l.col
+			return l.newToken(token.String, l.readString(), col)
 		} // isString(l.ch)
 
 		// salto de línea
 		if l.ch == '\n' {
+			col := l.col
 			l.advance()
-			return l.newToken(token.NewLine, "")
+			return l.newToken(token.NewLine, "", col)
 		} // l.ch == '\n'
 
 		// caracteres especiales
@@ -158,28 +162,30 @@ func (l *Lexer) NextToken() token.Token {
 			peek := l.peek()
 			key := string(l.ch) + string(peek)
 			if t, ok := l.symbol[key]; ok { // Es un símbolo doble?
+				col := l.col
 				l.advance() // avanza el primer símbolo
 				l.advance() // avanza el segundo
-				return l.newToken(t, key)
+				return l.newToken(t, key, col)
 			} else {
 				key = string(l.ch)
 				if t, ok := l.symbol[key]; ok { // Es un símbolo sencillo?
+					col := l.col
 					l.advance() // avanza el símbolo
-					return l.newToken(t, key)
+					return l.newToken(t, key, col)
 				} else {
 					l.printError(fmt.Sprintf("invalid character literal [%s]", string(l.ch)))
 				} // t, ok := l.symbol[key]; ok
 			} // t, ok := l.symbol[key]; ok
 		} // l.isSymbol(l.ch)
-		tok := l.newToken(token.Illegal, string(l.ch))
+		tok := l.newToken(token.Illegal, string(l.ch), l.col)
 		l.advance()
 		return tok
 	} // for l.ch != rune(0)
 	// es EOF
 	if l.prevToken != token.NewLine {
-		return l.newToken(token.NewLine, "")
+		return l.newToken(token.NewLine, "", 0)
 	} else {
-		return l.newToken(token.Eof, "")
+		return l.newToken(token.Eof, "", 0)
 	}
 }
 

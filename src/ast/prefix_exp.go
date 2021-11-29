@@ -6,6 +6,7 @@ import (
 )
 
 type PrefixExp struct {
+	Token token.Token
 	Op    token.TokenType
 	Right Expression
 }

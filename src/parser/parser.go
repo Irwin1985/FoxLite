@@ -10,6 +10,7 @@ import (
 // Constantes con las precedencias
 const (
 	lowest = iota
+	assignment
 	logicOr
 	logicAnd
 	equality
@@ -23,6 +24,7 @@ const (
 
 // Tabla de precedencias
 var precedenceTable = map[token.TokenType]int{
+	token.Assign:    assignment,
 	token.Or:        logicOr,
 	token.And:       logicAnd,
 	token.Equal:     equality,

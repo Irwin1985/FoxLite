@@ -67,7 +67,7 @@ func Execute(l *lexer.Lexer, out io.Writer, env *object.Environment) {
 		evaluated := evaluator.Eval(program, env)
 		if evaluated != nil {
 			if evaluated.Type() == object.ErrorObj {
-				msg := fmt.Sprintf("%s %s\n", l.GetErrorFormat(nil), evaluated.Inspect())
+				msg := fmt.Sprintf("%s %s\n", l.GetFileName(), evaluated.Inspect())
 				fmt.Println(msg)
 				return
 			}

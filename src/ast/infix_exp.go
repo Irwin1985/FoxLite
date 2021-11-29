@@ -6,6 +6,7 @@ import (
 )
 
 type InfixExp struct {
+	Token token.Token
 	Left  Expression
 	Op    token.TokenType
 	Right Expression

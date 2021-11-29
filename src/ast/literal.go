@@ -6,7 +6,7 @@ import (
 )
 
 type Literal struct {
-	Token token.TokenType // puede ser: ident, number, string, true, false
+	Token token.Token // puede ser: ident, number, string, true, false
 	Value interface{}
 }
 

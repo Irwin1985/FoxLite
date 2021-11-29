@@ -12,10 +12,10 @@ func evalLiteral(node *ast.Literal, env *object.Environment) object.Object {
 	case float64:
 		return &object.Integer{Value: val}
 	case string:
-		if node.Token == token.String {
+		if node.Token.Type == token.String {
 			return &object.String{Value: val}
 		}
-		return evalIdentifier(val, env)
+		return evalIdentifier(node, env)
 	case bool:
 		if val {
 			return True
@@ -25,11 +25,13 @@ func evalLiteral(node *ast.Literal, env *object.Environment) object.Object {
 	return Null
 }
 
-func evalIdentifier(node string, env *object.Environment) object.Object {
+func evalIdentifier(node *ast.Literal, env *object.Environment) object.Object {
+	name := node.Value.(string)
 	// resolver el nombre
-	result := env.Get(node)
+	result := env.Get(name, true)
 	if result == nil {
-		return &object.Error{Message: fmt.Sprintf("undefined ident: `%s`", node)}
+		lincol := fmt.Sprintf("%d:%d", node.Token.Line, node.Token.Col)
+		return &object.Error{Message: fmt.Sprintf("[%s] undefined ident: `%s`", lincol, name)}
 	}
 	return result
 }

@@ -1,8 +1,12 @@
 package ast
 
-import "fmt"
+import (
+	"FoxLite/src/token"
+	"fmt"
+)
 
 type ReturnStmt struct {
+	Token token.Token
 	Value Expression
 }
 

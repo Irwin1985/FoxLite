@@ -23,6 +23,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalReturnStmt(node, env)
 	case *ast.InfixExp:
 		return evalInfixExp(node, env)
+	case *ast.VarStmt:
+		return evalVarStmt(node, env)
 	default:
 		return nil
 	}
