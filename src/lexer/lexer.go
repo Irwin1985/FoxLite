@@ -25,7 +25,7 @@ type Lexer struct {
 func New() *Lexer {
 	l := &Lexer{
 		symbol:   map[string]token.TokenType{},
-		symbols:  "+-*/^%=()[],¿?!<>.",
+		symbols:  "+-*/^%=()[],¿?!<>.^",
 		line:     1,
 		col:      0,
 		fileName: "",

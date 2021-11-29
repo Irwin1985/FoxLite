@@ -36,6 +36,7 @@ var precedenceTable = map[token.TokenType]int{
 	token.Mul:       factor,
 	token.Div:       factor,
 	token.Mod:       factor,
+	token.Pow:       factor,
 	token.Lparen:    call,
 	token.Lbracket:  index,
 	token.Dot:       dot,
@@ -86,6 +87,8 @@ func (p *Parser) registerPrefixFns() {
 	p.prefixParseFns[token.False] = p.parseLiteral  // False
 	p.prefixParseFns[token.Null] = p.parseLiteral   // Null
 	p.prefixParseFns[token.Ident] = p.parseLiteral  // foo, bar
+	// Expresiones agrupadas
+	p.prefixParseFns[token.Lparen] = p.parseGroupedExp // (1 + 2) * (3 + 4)
 	// Expresiones unarias
 	p.prefixParseFns[token.Minus] = p.parsePrefixExp // -5, -foo()
 }
@@ -123,6 +126,15 @@ func (p *Parser) curPrecedence() int {
 
 func (p *Parser) match(t token.TokenType) bool {
 	return p.curToken.Type == t
+}
+
+func (p *Parser) expect(t token.TokenType, msg string) {
+	if p.curToken.Type != t {
+		text := p.l.GetErrorFormat(&p.curToken)
+		p.errors = append(p.errors, fmt.Sprintf("%s %s\n", text, msg))
+	} else {
+		p.nextToken() // advance the matched token
+	}
 }
 
 func (p *Parser) peek(t token.TokenType) bool {

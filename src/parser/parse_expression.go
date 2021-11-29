@@ -12,7 +12,9 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		p.recovery()
 		return nil
 	}
+	// parse left right expresion
 	leftExp := prefixFns()
+
 	for precedence < p.curPrecedence() {
 		infixFns := p.infixParseFns[p.curToken.Type]
 		if infixFns == nil {
