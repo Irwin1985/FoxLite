@@ -7,6 +7,7 @@ const (
 	StringObj
 	BooleanObj
 	NullObj
+	FuncObj
 	ReturnObj
 	ErrorObj
 )

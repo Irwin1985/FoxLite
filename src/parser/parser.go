@@ -78,6 +78,9 @@ func (p *Parser) nextToken() {
 }
 
 func (p *Parser) Parse() *ast.Program {
+	for !p.eof() && p.match(token.NewLine) {
+		p.nextToken()
+	}
 	return p.parseProgram()
 }
 
@@ -93,6 +96,8 @@ func (p *Parser) registerPrefixFns() {
 	p.prefixParseFns[token.Lparen] = p.parseGroupedExp // (1 + 2) * (3 + 4)
 	// Expresiones unarias
 	p.prefixParseFns[token.Minus] = p.parsePrefixExp // -5, -foo()
+	// Declaraciones de Funciones
+	p.prefixParseFns[token.Function] = p.parseFunctionLiteral // Func Add()...
 }
 
 func (p *Parser) registerInfixFns() {

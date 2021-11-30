@@ -1,2 +1,7 @@
-// Prueba null
-3 + 3
+/*
+* Esta función suma 2 números
+*/
+Func Sumar(x, y)
+    x = 20
+    y = 30
+    Return x + y

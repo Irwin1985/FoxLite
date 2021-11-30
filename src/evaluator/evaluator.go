@@ -25,6 +25,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalInfixExp(node, env)
 	case *ast.VarStmt:
 		return evalVarStmt(node, env)
+	case *ast.FunctionLiteral:
+		return evalFunctionLiteral(node, env)
 	default:
 		return nil
 	}
