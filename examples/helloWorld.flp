@@ -1,7 +1,11 @@
 /*
 * Esta función suma 2 números
 */
-Func Sumar(x, y)
-    x = 20
-    y = 30
-    Return x + y
+lbCondition = True
+If lbCondition
+    ? "Policia 1"
+    ?"Policia 2"
+    ?"Policia 3"
+    ?"Policia 4"
+Else
+    ? "Policia 2"

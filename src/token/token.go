@@ -55,6 +55,8 @@ const (
 	CreateObject
 	For
 	In
+	If
+	Else
 )
 
 // Array con las descripciones de los tokens
@@ -109,6 +111,8 @@ var tokenDesc = []string{
 	"CreateObject",
 	"For",
 	"in",
+	"If",
+	"Else",
 }
 
 var keywords = map[string]TokenType{
@@ -122,6 +126,8 @@ var keywords = map[string]TokenType{
 	"CreateObject": CreateObject,
 	"For":          For,
 	"in":           In,
+	"If":           If,
+	"Else":         Else,
 }
 
 type Token struct {

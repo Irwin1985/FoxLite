@@ -15,6 +15,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 	case *ast.Program:
 		return evalProgram(node, env)
+	case *ast.BlockStmt:
+		return evalBlockStmt(node, env)
 	case *ast.ExpressionStmt:
 		return evalExpressionStmt(node, env)
 	case *ast.Literal:
@@ -25,8 +27,12 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalInfixExp(node, env)
 	case *ast.VarStmt:
 		return evalVarStmt(node, env)
+	case *ast.IfExp:
+		return evalIfExp(node, env)
 	case *ast.FunctionLiteral:
 		return evalFunctionLiteral(node, env)
+	case *ast.PrintStmt:
+		return evalPrintStmt(node, env)
 	default:
 		return nil
 	}

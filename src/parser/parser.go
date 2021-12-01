@@ -98,6 +98,8 @@ func (p *Parser) registerPrefixFns() {
 	p.prefixParseFns[token.Minus] = p.parsePrefixExp // -5, -foo()
 	// Declaraciones de Funciones
 	p.prefixParseFns[token.Function] = p.parseFunctionLiteral // Func Add()...
+	// If expression
+	p.prefixParseFns[token.If] = p.parseIfExp // If cond ... Else ...
 }
 
 func (p *Parser) registerInfixFns() {
@@ -138,7 +140,13 @@ func (p *Parser) match(t token.TokenType) bool {
 func (p *Parser) expect(t token.TokenType, msg string) {
 	if p.curToken.Type != t {
 		text := p.l.GetErrorFormat(&p.curToken)
-		p.errors = append(p.errors, fmt.Sprintf("%s %s\n", text, msg))
+		out := msg
+		if len(out) == 0 {
+			unexpected := token.GetTokenStr(p.curToken.Type)
+			expected := token.GetTokenStr(t)
+			out = fmt.Sprintf("unexpected token `%s`, expecting `%s`", unexpected, expected)
+		}
+		p.errors = append(p.errors, fmt.Sprintf("%s %s\n", text, out))
 	} else {
 		p.nextToken() // advance the matched token
 	}
