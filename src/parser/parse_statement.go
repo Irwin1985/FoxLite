@@ -15,6 +15,9 @@ func (p *Parser) parseStatement() ast.Statement {
 		if p.match(token.Ident) && p.peekToken.Type == token.Assign {
 			return p.parseVarStmt()
 		}
+		if p.match(token.Do) && p.peekToken.Type == token.Case {
+			return p.parseDoCaseStmt()
+		}
 		return p.parseExpressionStmt()
 	}
 }

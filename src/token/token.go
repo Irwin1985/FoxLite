@@ -57,6 +57,10 @@ const (
 	In
 	If
 	Else
+	Do
+	Case
+	Otherwise
+	EndCase
 )
 
 // Array con las descripciones de los tokens
@@ -113,6 +117,10 @@ var tokenDesc = []string{
 	"in",
 	"If",
 	"Else",
+	"Do",
+	"Case",
+	"Otherwise",
+	"EndCase",
 }
 
 var keywords = map[string]TokenType{
@@ -128,6 +136,10 @@ var keywords = map[string]TokenType{
 	"in":           In,
 	"If":           If,
 	"Else":         Else,
+	"Do":           Do,
+	"Case":         Case,
+	"Otherwise":    Otherwise,
+	"EndCase":      EndCase,
 }
 
 type Token struct {

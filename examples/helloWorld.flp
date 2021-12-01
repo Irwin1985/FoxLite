@@ -1,11 +1,24 @@
 /*
 * Esta función suma 2 números
 */
-lbCondition = True
-If lbCondition
-    ? "Policia 1"
-    ?"Policia 2"
-    ?"Policia 3"
-    ?"Policia 4"
-Else
-    ? "Policia 2"
+lcLetra = 'X'
+lcOutput = ""
+Do Case
+Case lcLetra == 'A'
+    lcOutput = "Es la letra A"
+Case lcLetra == 'B'
+    lcOutput = "Es la letra B"
+Case lcLetra == 'C'
+    lcOutput = "Es la letra C"
+Case lcLetra == 'D'
+    lcOutput = "Es la letra D"
+Case lcLetra == 'E'
+    lcOutput = "Es la letra E"
+Case lcLetra == 'F'
+    lcOutput = "Es la letra F"
+Case lcLetra == 'G'
+    lcOutput = "Es la letra G"
+Otherwise
+    lcOutput = "No tengo idea! 😋"
+EndCase
+? "La respuesta es: ", lcOutput

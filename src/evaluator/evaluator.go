@@ -33,6 +33,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalFunctionLiteral(node, env)
 	case *ast.PrintStmt:
 		return evalPrintStmt(node, env)
+	case *ast.DoCaseStmt:
+		return evalDoCaseStmt(node, env)
 	default:
 		return nil
 	}

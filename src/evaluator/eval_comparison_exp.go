@@ -4,6 +4,7 @@ import (
 	"FoxLite/src/ast"
 	"FoxLite/src/object"
 	"FoxLite/src/token"
+	"fmt"
 )
 
 func evalComparisonExp(node *ast.InfixExp, env *object.Environment) object.Object {
@@ -23,6 +24,9 @@ func evalComparisonExp(node *ast.InfixExp, env *object.Environment) object.Objec
 	}
 	if lType == object.BooleanObj && rType == object.BooleanObj {
 		return evalBooleanComparison(left.(*object.Boolean), right.(*object.Boolean), node.Op)
+	}
+	if lType == object.StringObj && rType == object.StringObj {
+		return evalStringComparison(left.(*object.String), right.(*object.String), node.Op)
 	}
 	return reportInfixError(lType, rType)
 }
@@ -77,4 +81,20 @@ func evalBooleanComparison(left *object.Boolean, right *object.Boolean, op token
 		return False
 	}
 	return reportUnexpectedError(op)
+}
+
+func evalStringComparison(left *object.String, right *object.String, op token.TokenType) object.Object {
+	switch op {
+	case token.Equal:
+		if left.Value == right.Value {
+			return True
+		}
+		return False
+	case token.NotEq:
+		if left.Value != right.Value {
+			return True
+		}
+		return False
+	}
+	return object.NewError(fmt.Sprintf("`%s` operator does not support string types", token.GetTokenStr(op)))
 }

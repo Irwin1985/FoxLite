@@ -22,5 +22,6 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		}
 		leftExp = infixFns(leftExp)
 	}
+
 	return leftExp
 }
