@@ -26,8 +26,8 @@ func (p *Parser) parseDoCaseStmt() ast.Statement {
 	if p.match(token.Otherwise) {
 		p.nextToken() // skip 'Otherwise' token
 		stmt.Alternative = p.parseBlockStmt()
-		p.expect(token.EndCase, "")
 	}
+	p.expect(token.EndCase, "")
 
 	return stmt
 }

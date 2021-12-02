@@ -1,24 +1,10 @@
 /*
 * Esta función suma 2 números
 */
-lcLetra = 'X'
-lcOutput = ""
-Do Case
-Case lcLetra == 'A'
-    lcOutput = "Es la letra A"
-Case lcLetra == 'B'
-    lcOutput = "Es la letra B"
-Case lcLetra == 'C'
-    lcOutput = "Es la letra C"
-Case lcLetra == 'D'
-    lcOutput = "Es la letra D"
-Case lcLetra == 'E'
-    lcOutput = "Es la letra E"
-Case lcLetra == 'F'
-    lcOutput = "Es la letra F"
-Case lcLetra == 'G'
-    lcOutput = "Es la letra G"
-Otherwise
-    lcOutput = "No tengo idea! 😋"
-EndCase
-? "La respuesta es: ", lcOutput
+i = 0
+While i < 10
+     i = i + 1
+     If i == 5
+        Return Null
+     ?i
+     ? "Hola mundo"

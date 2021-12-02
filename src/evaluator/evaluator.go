@@ -35,8 +35,14 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalPrintStmt(node, env)
 	case *ast.DoCaseStmt:
 		return evalDoCaseStmt(node, env)
+	case *ast.While:
+		return evalWhileStmt(node, env)
+	case *ast.Loop:
+		return &object.Loop{}
+	case *ast.Exit:
+		return &object.Exit{}
 	default:
-		return nil
+		return &object.None{}
 	}
 }
 

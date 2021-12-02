@@ -61,6 +61,9 @@ const (
 	Case
 	Otherwise
 	EndCase
+	While
+	Exit
+	Loop
 )
 
 // Array con las descripciones de los tokens
@@ -121,6 +124,9 @@ var tokenDesc = []string{
 	"Case",
 	"Otherwise",
 	"EndCase",
+	"While",
+	"Exit",
+	"Loop",
 }
 
 var keywords = map[string]TokenType{
@@ -140,6 +146,9 @@ var keywords = map[string]TokenType{
 	"Case":         Case,
 	"Otherwise":    Otherwise,
 	"EndCase":      EndCase,
+	"While":        While,
+	"Exit":         Exit,
+	"Loop":         Loop,
 }
 
 type Token struct {

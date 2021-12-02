@@ -9,7 +9,10 @@ const (
 	NullObj
 	FuncObj
 	ReturnObj
+	NoneObj
 	ErrorObj
+	ExitObj
+	LoopObj
 )
 
 type Object interface {

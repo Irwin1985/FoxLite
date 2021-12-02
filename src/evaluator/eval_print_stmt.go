@@ -17,5 +17,5 @@ func evalPrintStmt(node *ast.PrintStmt, env *object.Environment) object.Object {
 	}
 	fmt.Print("\n")
 
-	return nil
+	return &object.None{}
 }

@@ -9,10 +9,9 @@ func evalBlockStmt(node *ast.BlockStmt, env *object.Environment) object.Object {
 	var result object.Object
 	for _, stmt := range node.Statements {
 		result = Eval(stmt, env)
-		if result != nil {
-			if result.Type() == object.ReturnObj || result.Type() == object.ErrorObj {
-				return result
-			}
+		rType := result.Type()
+		if rType == object.ReturnObj || rType == object.ErrorObj || rType == object.ExitObj || rType == object.LoopObj {
+			return result
 		}
 	}
 	return result
