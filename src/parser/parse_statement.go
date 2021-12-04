@@ -9,6 +9,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.Return:
 		return p.parseReturnStmt()
+	case token.OpenQM:
+		return p.parseInputStmt()
 	case token.CloseQM:
 		return p.parsePrintStmt()
 	case token.While:

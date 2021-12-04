@@ -51,5 +51,5 @@ func evalWhileStmt(node *ast.While, env *object.Environment) object.Object {
 			break
 		}
 	}
-	return &object.None{}
+	return None
 }

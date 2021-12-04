@@ -10,6 +10,7 @@ import (
 var True = &object.Boolean{Value: true}
 var False = &object.Boolean{Value: false}
 var Null = &object.Null{}
+var None = &object.None{}
 
 func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
@@ -41,8 +42,10 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Loop{}
 	case *ast.Exit:
 		return &object.Exit{}
+	case *ast.Input:
+		return evalInputStmt(node, env)
 	default:
-		return &object.None{}
+		return None
 	}
 }
 

@@ -13,7 +13,7 @@ func evalReturnStmt(node *ast.ReturnStmt, env *object.Environment) object.Object
 			return val
 		}
 	} else {
-		val = &object.None{}
+		val = None
 	}
 	return &object.Return{Value: val}
 }

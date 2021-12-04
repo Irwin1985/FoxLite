@@ -1,10 +1,5 @@
-/*
-* Esta función suma 2 números
-*/
-i = 0
-While i < 10
-     i = i + 1
-     If i == 5
-        Return Null
-     ?i
-     ? "Hola mundo"
+// pedir datos por entrada standar
+
+lcName = ""
+¿ "cómo te llamas: ", lcName
+? "Hola", lcName
