@@ -3,7 +3,7 @@ package lexer
 func (l *Lexer) skipComments() {
 	end := l.peek()
 	if end == '/' { // avanzar hasta el final de la línea
-		for l.ch != '\n' {
+		for !l.isAtEnd() && l.ch != '\n' {
 			l.advance()
 		}
 		if l.ch == '\n' {

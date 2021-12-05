@@ -117,7 +117,7 @@ func (l *Lexer) peek() rune {
 }
 
 func (l *Lexer) NextToken() token.Token {
-	for l.ch != rune(0) {
+	for !l.isAtEnd() {
 		// ignorar espacios en blanco
 		if isSpace(l.ch) {
 			l.skipWhitespace()

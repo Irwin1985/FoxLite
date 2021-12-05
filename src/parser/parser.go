@@ -133,8 +133,13 @@ func (p *Parser) curPrecedence() int {
 	return lowest
 }
 
-func (p *Parser) match(t token.TokenType) bool {
-	return p.curToken.Type == t
+func (p *Parser) match(tokens ...token.TokenType) bool {
+	for _, t := range tokens {
+		if p.curToken.Type == t {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *Parser) expect(t token.TokenType, msg string) {

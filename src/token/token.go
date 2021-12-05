@@ -1,6 +1,9 @@
 package token
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type TokenType int
 
@@ -64,6 +67,10 @@ const (
 	While
 	Exit
 	Loop
+	// Variables
+	Private // Private
+	Local   // Local
+	Public  // Public
 )
 
 // Array con las descripciones de los tokens
@@ -127,28 +134,37 @@ var tokenDesc = []string{
 	"While",
 	"Exit",
 	"Loop",
+	"Private",
+	"Local",
+	"Public",
 }
 
 var keywords = map[string]TokenType{
-	"Func":         Function,
-	"Return":       Return,
-	"True":         True,
-	"False":        False,
-	"Null":         Null,
+	"fun":          Function,
+	"return":       Return,
+	"true":         True,
+	"false":        False,
+	"null":         Null,
 	"and":          And,
 	"or":           Or,
-	"CreateObject": CreateObject,
-	"For":          For,
+	"createobject": CreateObject,
+	"for":          For,
 	"in":           In,
-	"If":           If,
-	"Else":         Else,
-	"Do":           Do,
-	"Case":         Case,
-	"Otherwise":    Otherwise,
-	"EndCase":      EndCase,
-	"While":        While,
-	"Exit":         Exit,
-	"Loop":         Loop,
+	"if":           If,
+	"else":         Else,
+	"do":           Do,
+	"case":         Case,
+	"otherwise":    Otherwise,
+	"endcase":      EndCase,
+	"while":        While,
+	"exit":         Exit,
+	"loop":         Loop,
+	"prv":          Private,
+	"loc":          Local,
+	"pub":          Public,
+	"private":      Private,
+	"local":        Local,
+	"public":       Public,
 }
 
 type Token struct {
@@ -163,7 +179,7 @@ func (t *Token) Str() string {
 }
 
 func LookupIdent(ident string) TokenType {
-	if tok, ok := keywords[ident]; ok {
+	if tok, ok := keywords[strings.ToLower(ident)]; ok {
 		return tok
 	}
 	return Ident

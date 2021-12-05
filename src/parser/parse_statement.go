@@ -24,7 +24,7 @@ func (p *Parser) parseStatement() ast.Statement {
 		p.nextToken()
 		return stmt
 	default:
-		if p.match(token.Ident) && p.peekToken.Type == token.Assign {
+		if p.isVarStmt() {
 			return p.parseVarStmt()
 		}
 		if p.match(token.Do) && p.peekToken.Type == token.Case {
@@ -32,4 +32,11 @@ func (p *Parser) parseStatement() ast.Statement {
 		}
 		return p.parseExpressionStmt()
 	}
+}
+
+func (p *Parser) isVarStmt() bool {
+	if p.match(token.Ident) && p.peekToken.Type == token.Assign {
+		return true
+	}
+	return p.match(token.Local, token.Private, token.Public)
 }

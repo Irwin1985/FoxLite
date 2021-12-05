@@ -1,12 +1,6 @@
 # FoxLite
-Mis pensamientos acerca del diseño que le daría al lenguage de programación **Foxlite**.
+Un lenguaje de programación que pretende ser una versión simple y moderna de lo que pudo haber sido **Visual FoxPro**. 
 
-# Introducción
-Hola, mi nombre es Irwin y soy el creador de **FoxLite**, un lenguaje de programación que pretende ser una evolución de Fox. He programado en **Visual FoxPro** durante 12 años y le tengo un gran aprecio pues me ha dado de comer por durante todo este tiempo y lo menos que puedo hacer por él es evolucionarlo. Tal vez no te guste **FoxLite**, pero créeme que el diseño que vas a ver aquí es lo más parecido a un **Visual FoxPro** evolucionado, así que comencemos a ver lo que deja, lo que hereda y lo que mejora. 
-
-Este diseño es meramente subjetivo así que la evolución de **Fox** está en mi mano, pero no te preocupes porque conozco la gramática de **Fox** y la gramática de los lenguajes *"modernos"* por lo tanto me aseguraré que sus nuevos poderes lo ayuden a sobrevivir en este nuevo ecosistema.
-
-## Un repaso a Visual FoxPro
 Comencemos viendo un trozo de sintaxis de **Visual FoxPro**
 
 Lo siguiente son versiones del "Hola Mundo" en Fox.
@@ -177,7 +171,7 @@ Veamos algunas de los aspectos que **FoxLite** no obtendrá de **FoxPro**:
 
 ## Limando asperezas en el proceso evolutivo
 
-- **Literales Booleanos:** honestamente **.T.** y **.F.** no me molestan pero he decidido tender una rama hacía el árbol **ALGOL** por lo que ahora serán **True** y **False**. La vieja versión es incluso mejor, ya que escribes menos *(3 letras en lugar de 4)*, pero esto lo hago para que **FoxLite** sea bien visto por la comunidad cuya raíz desde luego parte de **ALGOL**.
+- **Literales Booleanos:** honestamente **.T.** y **.F.** no me molestan, pero he decidido tender una rama hacía el árbol **ALGOL** por lo que ahora serán **True** y **False**. La vieja versión es incluso mejor, ya que escribes menos *(3 letras en lugar de 4)*, pero esto lo hago para que **FoxLite** sea bien visto por la comunidad cuya raíz desde luego parte de **ALGOL**.
 
 ```Javascript
    lbVerdad = True
@@ -204,51 +198,32 @@ Los lenguajes modernos incluso vienen con una utilidad integrada para formatear 
 ## Lo nuevo de FoxLite
 
 No se le puede llamar *lenguaje moderno* sin que tenga características modernas verdad?, entonces vamos a ver algunas de las cosas que nos ofrecerá este lenguaje.
- 
-- **Notación Húngara estricta:** esta es quizá la idea más loca que se me ha ocurrido para **FoxLite**, pero si la estudiamos un poco de seguro diremos *"ah, pues claro, tiene sentido"*. Si vienes de **FoxPro** de seguro has visto o usado la [Notación Húngara](https://es.wikipedia.org/wiki/Notaci%C3%B3n_h%C3%BAngara), es aquella forma de declarar los identificadores de un programa según su ámbito y tipo, ejemplo: **lcNombre** donde *l* es de **LOCAL**, *c* es de **Character** y *Nombre* es la descripción del identificador. Entonces *¿Cómo encaja esa notación en **FoxLite**?*
-
-Para ahorrarnos el trabajo de tener que escribir **LOCAL, PRIVATE o PUBLIC** vamos a usar la **Notación Húngara** cómo forma estricta de declaración de variables. Esto quiere decir que habrá un estilo único de escritura en el lenguaje lo cual es fantástico porque favorecerá la legibilidad y uniformidad del código. 
-
-## Excepciones en la Notación Húngara
-- El bucle **For** puede saltarse la notación húngara para favorecer la corta declaración de los iteradores.
-```Javascript
-    // Válido pero no recomendado
-    For lcContador = 1 in 10
-        ?lcContador
-    
-    // Bueno
-    For i = 1 in 10
-        ?i
-```
-- **Toda variable declarada sin notación húngara será tratada como local.**
   
-- **Declaración de Variables:** gracias a la *Notación Húngara*, las variables no tiene por qué llevar delante las palabras reservadas **LOCAL, PRIVATE o PUBLIC**. El *enlace* se realizará con las primeras 2 letras seguidas de la descripción del identificador.
+- **Declaración de Variables:** la declaración de variables será igual a **Visual FoxPro** en el sentido del ámbito *Local, Private, Public*; sin embargo la sintaxis cambiará un poco.
 
 Veamos unos ejemplos:
 
 ```Javascript
-    lcNombre = "Juan" // lo mismo que LOCAL 
-    pnSaldo = 3.000 // lo mismo que PRIVATE
-    glConfigFile = "c:\Congif.json" // lo mismo que PUBLIC
-    
-    // Para el caso de parámetros
-    Func Sumar(tnNumero1, tnNumero2)
-        Return tnNumero1 + tnNumero2
+    prv nombre = "Juan" // variable privada 
+    loc saldo = 3.000 // variable local
+    pub configFile = "c:\Congif.json" // variable publica
 ```
-
-Lo anterior deja en evidencia que en **FoxLite** no habrá declaraciones de variables sin su respectiva asignación, por lo tanto toda variable que declares deberá llevar su respectivo valor para que el enlace interno sepa su ámbito, tipo y valor inicial.
 
 - **Constantes:** **FoxLite** no tendrá *constantes simbólicas* como las tiene Fox, ya que no estoy pensando en un **pre-procesado** del código fuente antes de compilar. Lo que si va a tener son *constantes declaradas* y tendrán la siguiente sintaxis.
 
 ```Javascript
-    const PI = 3.14159265
+    cons PI = 3.14159265
     lnRadio = 4
     ?"La circunferencia es: ", PI * Sqrt(lnRadio)
 ```
 
 - **Enumerables:** esta es quizá la característica que más echaba de menos en **FoxPro**, siempre tenía que crear un objeto **Empty** para crear mis enumerables, ahora ya eso quedó en el pasado y **FoxLite** nos dará esa comodidad.
 ```Javascript
-    Enum Colores [Rojo = 3, Verde = 2, Azul = 1]
+    Enum Colores {
+        Rojo = 3, 
+        Verde = 2, 
+        Azul = 1
+    }
     leColor = Colores.Rojo
     // le viene de Local Enumerable
     ? "El color es: ", leColor
@@ -280,10 +255,10 @@ Veamos algunos ejemplos:
 
 ```Javascript
     // Función externa
-    Func HolaMundo()
+    pub fn HolaMundo()
         pcSaludo = "Hola"
         // Función interna (closure)
-        Func DecirMundo()
+        prv fun DecirMundo()
             Return pcSaludo + " Mundo!"
         Return DecirMundo
     // Invocar la función
