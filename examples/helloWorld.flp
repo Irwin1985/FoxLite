@@ -1,6 +1,8 @@
-function fib(n)
-    if n < 2
-        return n
-    return fib(n-1) + fib(n-2)
+func cuadrado(n)
+    return n * n
 
-? fib(35)
+func cubo(n, fn)
+    return n * fn(n)
+
+? "El cuadrado de 2 es: ", cuadrado(2)
+? "El cubo de 2 es: ", cubo(2, cuadrado)

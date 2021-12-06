@@ -152,9 +152,13 @@ func (l *Lexer) NextToken() token.Token {
 
 		// salto de línea
 		if l.ch == '\n' {
-			col := l.col
+			if l.prevToken != token.NewLine {
+				col := l.col
+				l.advance()
+				return l.newToken(token.NewLine, "", col)
+			}
 			l.advance()
-			return l.newToken(token.NewLine, "", col)
+			continue
 		} // l.ch == '\n'
 
 		// caracteres especiales
