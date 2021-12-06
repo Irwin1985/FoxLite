@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func (p *Parser) parseFunctionLiteral() ast.Expression {
+func (p *Parser) parseFunctionLiteral() ast.Statement {
 	exp := &ast.FunctionLiteral{
 		Token:      p.curToken,
 		Parameters: []*ast.Literal{},
@@ -21,8 +21,8 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 			p.nextToken() // skip ',' token
 			exp.Parameters = append(exp.Parameters, p.parseLiteral().(*ast.Literal))
 		}
-		p.expect(token.Rparen, "expecting `)`")
 	}
+	p.expect(token.Rparen, "expecting `)`")
 
 	exp.Body = p.parseBlockStmt()
 

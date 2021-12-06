@@ -11,6 +11,7 @@ func evalFunctionLiteral(node *ast.FunctionLiteral, env *object.Environment) obj
 		Name:       node.Name.String(),
 		Parameters: node.Parameters,
 		Body:       node.Body,
+		Env:        env,
 	}
-	return env.Set(name, 'l', f)
+	return env.Set(name, 'g', f)
 }

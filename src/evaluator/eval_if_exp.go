@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func evalIfExp(node *ast.IfExp, env *object.Environment) object.Object {
+func evalIfExp(node *ast.IfStmt, env *object.Environment) object.Object {
 	cond := Eval(node.Condition, env)
 	if isError(cond) {
 		return cond

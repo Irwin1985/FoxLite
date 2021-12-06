@@ -1,9 +1,6 @@
-// Declaración de variables
+function fib(n)
+    if n < 2
+        return n
+    return fib(n-1) + fib(n-2)
 
-local a = 10
-local b = 20
-local c = a + b
-?"La suma es: ", c
-//local b
-//local c = a + b
-//? c
+? fib(35)

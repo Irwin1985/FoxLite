@@ -23,6 +23,10 @@ func (p *Parser) parseStatement() ast.Statement {
 		stmt := &ast.Exit{Token: p.curToken}
 		p.nextToken()
 		return stmt
+	case token.Function:
+		return p.parseFunctionLiteral()
+	case token.If:
+		return p.parseIfStmt()
 	default:
 		if p.isVarStmt() {
 			return p.parseVarStmt()

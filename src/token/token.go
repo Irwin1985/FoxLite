@@ -140,7 +140,8 @@ var tokenDesc = []string{
 }
 
 var keywords = map[string]TokenType{
-	"fun":          Function,
+	"func":         Function,
+	"function":     Function,
 	"return":       Return,
 	"true":         True,
 	"false":        False,

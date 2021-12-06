@@ -96,10 +96,6 @@ func (p *Parser) registerPrefixFns() {
 	p.prefixParseFns[token.Lparen] = p.parseGroupedExp // (1 + 2) * (3 + 4)
 	// Expresiones unarias
 	p.prefixParseFns[token.Minus] = p.parsePrefixExp // -5, -foo()
-	// Declaraciones de Funciones
-	p.prefixParseFns[token.Function] = p.parseFunctionLiteral // Func Add()...
-	// If expression
-	p.prefixParseFns[token.If] = p.parseIfExp // If cond ... Else ...
 }
 
 func (p *Parser) registerInfixFns() {
@@ -124,6 +120,8 @@ func (p *Parser) registerInfixFns() {
 	p.infixParseFns[token.Dot] = p.parseInfixExp // foo.bar
 	// Asignaciones
 	p.infixParseFns[token.Assign] = p.parseInfixExp // foo = bar | foo.bar = 20
+	// llamadas a funciones
+	p.infixParseFns[token.Lparen] = p.parseCallExp // foo()
 }
 
 func (p *Parser) curPrecedence() int {

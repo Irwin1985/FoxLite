@@ -13,6 +13,7 @@ type Environment struct {
 func NewEnv() *Environment {
 	e := &Environment{
 		storage: map[string]*Vector{},
+		outer:   nil,
 	}
 	return e
 }
@@ -46,7 +47,7 @@ func (e *Environment) Get(name string, outCall bool) Object {
 		}
 	} else {
 		if e.outer != nil {
-			return e.Get(name, false)
+			return e.outer.Get(name, false)
 		}
 	}
 	return nil

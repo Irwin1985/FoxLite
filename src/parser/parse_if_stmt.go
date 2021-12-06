@@ -5,8 +5,8 @@ import (
 	"FoxLite/src/token"
 )
 
-func (p *Parser) parseIfExp() ast.Expression {
-	exp := &ast.IfExp{
+func (p *Parser) parseIfStmt() ast.Statement {
+	exp := &ast.IfStmt{
 		Token: p.curToken,
 	}
 	p.nextToken() // skip 'If' token

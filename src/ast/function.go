@@ -13,7 +13,7 @@ type FunctionLiteral struct {
 	Body       *BlockStmt
 }
 
-func (f *FunctionLiteral) expressionNode() {}
+func (f *FunctionLiteral) statementNode() {}
 func (f *FunctionLiteral) String() string {
 	var out bytes.Buffer
 
