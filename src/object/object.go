@@ -13,6 +13,7 @@ const (
 	ErrorObj
 	ExitObj
 	LoopObj
+	ClassObj
 )
 
 type Object interface {

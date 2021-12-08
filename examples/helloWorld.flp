@@ -1,8 +1,9 @@
-func cuadrado(n)
-    return n * n
+class Persona
+    nombre = ""
+    apellido = ""
 
-func cubo(n, fn)
-    return n * fn(n)
+    func getNombre()
+        return nombre
 
-? "El cuadrado de 2 es: ", cuadrado(2)
-? "El cubo de 2 es: ", cubo(2, cuadrado)
+    func getApellido()
+        return apellido

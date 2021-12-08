@@ -46,6 +46,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Exit{}
 	case *ast.Input:
 		return evalInputStmt(node, env)
+	case *ast.Class:
+		return evalClassStmt(node, env)
 	default:
 		return None
 	}

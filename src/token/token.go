@@ -67,6 +67,7 @@ const (
 	While
 	Exit
 	Loop
+	Class
 	// Variables
 	Private // Private
 	Local   // Local
@@ -134,6 +135,7 @@ var tokenDesc = []string{
 	"While",
 	"Exit",
 	"Loop",
+	"Class",
 	"Private",
 	"Local",
 	"Public",
@@ -160,6 +162,7 @@ var keywords = map[string]TokenType{
 	"while":        While,
 	"exit":         Exit,
 	"loop":         Loop,
+	"class":        Class,
 	"prv":          Private,
 	"loc":          Local,
 	"pub":          Public,

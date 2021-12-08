@@ -23,6 +23,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		stmt := &ast.Exit{Token: p.curToken}
 		p.nextToken()
 		return stmt
+	case token.Class:
+		return p.parseClassStmt()
 	case token.Function:
 		return p.parseFunctionLiteral()
 	case token.If:
