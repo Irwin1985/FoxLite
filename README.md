@@ -2,7 +2,7 @@
 Un lenguaje de programación que pretende ser una versión simple y moderna de lo que pudo haber sido **Visual FoxPro**. 
 
 Si te gusta mi trabajo puedes apoyarme con un donativo:   
-- [![DONATE!](http://www.pngall.com/wp-content/uploads/2016/05/PayPal-Donate-Button-PNG-File-180x100.png)](https://www.paypal.com/donate/?hosted_button_id=LXQYXFP77AD2G) 
+[![DONATE!](http://www.pngall.com/wp-content/uploads/2016/05/PayPal-Donate-Button-PNG-File-180x100.png)](https://www.paypal.com/donate/?hosted_button_id=LXQYXFP77AD2G) 
 
     Gracias por tu apoyo!
 
